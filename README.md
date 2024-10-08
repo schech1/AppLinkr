@@ -27,7 +27,7 @@ AppLinkr is a simple yet powerful web application that generates a QR code and f
 version: '3.8'
 
 services:
-  qr-store-forwarder:
+  applinkr:
     image: schech1/applinkr:latest
     ports:
       - "5001:5001"
