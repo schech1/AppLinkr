@@ -38,6 +38,11 @@ services:
       - ./db:/app/db
 ```
 
+## Usage
+Navigate to your domain, to open the QR-Code-Generator.
+
+Navigate to `/admin` to access the admin panel. Login with your defined password.
+
 ## License
 
 This project is licensed under the MIT License. See the LICENSE file for more details.
