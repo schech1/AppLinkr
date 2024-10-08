@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AppLinkr - QR Codes for AppStores</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        input[type="text"], input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .qr-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .qr-container img {
+            max-width: 100%; 
+            width: 200px;    
+            height: auto;
+            border-radius: 8px;
+        }
+        .qr-url {
+            margin: 10px 0;
+            font-size: 14px;
+            color: #007bff; /* Color for the link */
+        }
+        .copy-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .copy-button:hover {
+            background-color: #0056b3;
+        }
+        .dark-mode {
+            background-color: #181818;
+            color: #e0e0e0;
+        }
+        .dark-mode form {
+            background: #282828;
+        }
+        .dark-mode input[type="text"], .dark-mode input[type="submit"] {
+            background: #383838;
+            border: 1px solid #444;
+            color: #e0e0e0;
+        }
+        .dark-mode input[type="submit"] {
+            background-color: #0056b3;
+        }
+        .dark-mode input[type="submit"]:hover {
+            background-color: #00408a;
+        }
+        .theme-toggle {
+            cursor: pointer;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">Toggle Dark Mode</button>
+    <h1>QR Code Generator for App Store Links</h1>
+    <form action="/generate_qr" method="post">
+        <label for="title">Title:</label><br>
+        <input type="text" id="title" name="title" required><br><br>
+
+        <label for="app_store_url">App Store URL:</label><br>
+        <input type="text" id="app_store_url" name="app_store_url" required><br><br>
+
+        <label for="play_store_url">Play Store URL:</label><br>
+        <input type="text" id="play_store_url" name="play_store_url" required><br><br>
+
+        <input type="submit" value="Generate QR Code">
+    </form>
+    
+    {% if qr_code_url %}
+    <div class="qr-container">
+        <h2>Your QR Code:</h2>
+        <img src="{{ qr_code_url }}" alt="QR Code">
+        <div class="qr-url">
+            <span id="qrUrlText">{{ qr_code_url }}</span>
+            <button class="copy-button" onclick="copyToClipboard()">Copy to Clipboard</button>
+        </div>
+    </div>
+    {% endif %}
+    
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+
+        function copyToClipboard() {
+            const qrUrlText = document.getElementById('qrUrlText');
+            const textArea = document.createElement("textarea");
+            textArea.value = qrUrlText.innerText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+            alert("QR Code URL copied to clipboard!");
+        }
+    </script>
+</body>
+</html>

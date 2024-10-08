@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  qr-store-forwarder:
+    image: schech1/applinkr:latest
+    ports:
+      - "5001:5001"
+    environment:
+      PASSWORD: admin
+      SERVER_URL: "https://qr.domain.com"
+    volumes:
+      - ./db:/app/db
+
