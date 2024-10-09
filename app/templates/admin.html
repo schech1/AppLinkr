@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AppLinkr - Code Statistics</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -19,9 +18,46 @@
             color: #007bff;
         }
 
-        h2 {
-            color: #333;
-            margin-bottom: 20px;
+        /* Hamburger menu styles */
+        .menu-icon {
+            display: none;
+            font-size: 30px;
+            cursor: pointer;
+            color: #007bff;
+        }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #007bff;
+            padding: 10px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+        }
+        nav a:hover {
+            background-color: #0056b3;
+            border-radius: 4px;
+        }
+        .menu {
+            display: flex;
+            gap: 20px;
+        }
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .menu {
+                display: none;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .menu.active {
+                display: flex;
+            }
+            .menu-icon {
+                display: block;
+            }
         }
 
         .card {
@@ -57,12 +93,6 @@
             margin: 10px 0;
         }
 
-        .actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
         .delete-button {
             background-color: #dc3545; 
             color: white;
@@ -77,99 +107,70 @@
             background-color: #c82333;
         }
 
-        .flashes {
-            margin: 20px 0;
-            padding: 10px;
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            border-radius: 4px;
-            list-style-type: none;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .card {
-                padding: 15px;
-            }
-        }
     </style>
 </head>
 <body>
-
-<h1>QR Code Statistics</h1>
-
-{% if not session.get('authenticated') %}
-    <h2>Login</h2>
-    <form method="post" action="{{ url_for('admin') }}">
-        <input type="password" name="password" placeholder="Enter Password" required>
-        <input type="submit" value="Login">
-    </form>
-{% else %}
-    <a href="{{ url_for('logout') }}" style="text-decoration: none; color: #007bff;">Logout</a>
-    <h2>Statistics</h2>
-    {% for code, qr_code_url, records in qr_codes %}
-        <div class="card">
-            <div class="card-title">{{ code[1] }}</div> <!-- Title -->
-            <div class="card-content">
-                <strong>QR Code ID:</strong> {{ code[0] }}<br>
-                <strong>Access Count:</strong> {{ records|length }}<br>
-                <strong>QR Code:</strong><br>
-                <a href="{{ qr_code_url }}" target="_blank">
-                    <img src="{{ qr_code_url }}" alt="QR Code">
-                </a>
-                <div class="url">
-                    <strong>App Store URL:</strong> <a href="{{ code[2] }}" target="_blank">{{ code[2] }}</a><br>
-                    <strong>Play Store URL:</strong> <a href="{{ code[3] }}" target="_blank">{{ code[3] }}</a>
-                </div>
-                <div>
-                    <strong>Access Records:</strong>
-                    <ul>
-                        {% for record in records %}
-                            <li>{{ record[2] }} accessed from IP: {{ record[3] }} at {{ record[4] }}</li>
-                        {% endfor %}
-                    </ul>
-
-                    <ul>
-                        {% for record in records %}
-                            <li>{{ record[2] }} | Region: {{ record[5] }} | Browser: {{ record[6] }} | OS: {{ record[7] }} | Language: {{ record[8] }} | Referrer: {{ record[9] }}</li>
-                        {% endfor %}
-                    </ul>
-                    
-                </div>
-            </div>
-            <div class="actions">
-                <button type="button" class="delete-button" onclick="confirmDelete('{{ code[0] }}')">Delete</button>
-
-            </div>
+    <!-- Navigation bar -->
+    <nav>
+        <span class="menu-icon" onclick="toggleMenu()">&#9776;</span>
+        <div class="menu">
+            <a href="index.html">QR Generator</a>
+            <a href="admin.html">Admin</a>
         </div>
-    {% endfor %}
-    <!-- Backup Database -->
-    <form action="/download_db" method="get" style="margin-top: 20px;">
-        <input type="submit" value="Download Database Backup" class="delete-button">
-    </form>
-{% endif %}
+    </nav>
 
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    <ul class="flashes">
-      {% for message in messages %}
-        <li>{{ message }}</li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
+    <h1>QR Code Statistics</h1>
 
-<script>
-    function confirmDelete(qrCodeId) {
-        if (confirm('Are you sure you want to delete this QR code?')) {
-            window.location.href = '/delete/' + qrCodeId;
+    {% if not session.get('authenticated') %}
+        <h2>Login</h2>
+        <form method="post" action="{{ url_for('admin') }}">
+            <input type="password" name="password" placeholder="Enter Password" required>
+            <input type="submit" value="Login">
+        </form>
+    {% else %}
+        <a href="{{ url_for('logout') }}" style="text-decoration: none; color: #007bff;">Logout</a>
+        <h2>Statistics</h2>
+        {% for code, qr_code_url, records in qr_codes %}
+            <div class="card">
+                <div class="card-title">{{ code[1] }}</div> <!-- Title -->
+                <div class="card-content">
+                    <strong>QR Code ID:</strong> {{ code[0] }}<br>
+                    <strong>Access Count:</strong> {{ records|length }}<br>
+                    <strong>QR Code:</strong><br>
+                    <a href="{{ qr_code_url }}" target="_blank">
+                        <img src="{{ qr_code_url }}" alt="QR Code">
+                    </a>
+                    <div class="url">
+                        <strong>App Store URL:</strong> <a href="{{ code[2] }}" target="_blank">{{ code[2] }}</a><br>
+                        <strong>Play Store URL:</strong> <a href="{{ code[3] }}" target="_blank">{{ code[3] }}</a>
+                    </div>
+                    <div>
+                        <strong>Access Records:</strong>
+                        <ul>
+                            {% for record in records %}
+                                <li>{{ record[2] }} | Region: {{ record[5] }} | Browser: {{ record[6] }} | OS: {{ record[7] }} | Language: {{ record[8] }} | Referrer: {{ record[9] }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button type="button" class="delete-button" onclick="confirmDelete('{{ code[0] }}')">Delete</button>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <script>
+        function toggleMenu() {
+            const menu = document.querySelector('.menu');
+            menu.classList.toggle('active');
         }
-    }
-</script>
 
+        function confirmDelete(qrCodeId) {
+            if (confirm('Are you sure you want to delete this QR code?')) {
+                window.location.href = '/delete/' + qrCodeId;
+            }
+        }
+    </script>
 </body>
 </html>
