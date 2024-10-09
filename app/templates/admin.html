@@ -132,6 +132,13 @@
                             <li>{{ record[2] }} accessed from IP: {{ record[3] }} at {{ record[4] }}</li>
                         {% endfor %}
                     </ul>
+
+                    <ul>
+                        {% for record in records %}
+                            <li>{{ record[2] }} | Region: {{ record[5] }} | Browser: {{ record[6] }} | OS: {{ record[7] }} | Language: {{ record[8] }} | Referrer: {{ record[9] }}</li>
+                        {% endfor %}
+                    </ul>
+                    
                 </div>
             </div>
             <div class="actions">
