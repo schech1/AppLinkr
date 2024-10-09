@@ -42,12 +42,19 @@ def get_db():
 
         g.db.execute('''CREATE TABLE IF NOT EXISTS qr_code_tracking
                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                         qr_code_id TEXT NOT NULL,  -- Match UUID type
+                         qr_code_id TEXT NOT NULL,
                          device_type TEXT NOT NULL,
                          ip_address TEXT NOT NULL,
                          access_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+                         region TEXT,
+                         browser TEXT,
+                         os TEXT,
+                         language TEXT,
+                         referrer TEXT,
                          FOREIGN KEY (qr_code_id) REFERENCES qr_codes(id))''')
     return g.db
+
+
 
 @app.teardown_appcontext
 def close_db(exception):
