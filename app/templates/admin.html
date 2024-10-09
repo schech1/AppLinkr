@@ -171,7 +171,11 @@
                 </div>
             </div>
         {% endfor %}
+        <form action="/download_db" method="get" style="margin-top: 20px;">
+            <input type="submit" value="Download Database Backup" class="delete-button">
+        </form>
     {% endif %}
+
 
     <script>
         function toggleMenu() {
