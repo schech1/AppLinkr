@@ -147,7 +147,7 @@
             <div class="card">
                 <div class="card-title">{{ code[1] }}</div> <!-- Title -->
                 <div class="card-content">
-                    <strong>QR Code ID:</strong> {{ code[0] }}<br>
+                    <strong>ID:</strong> {{ code[0] }}<br>
                     <strong>Scans:</strong> {{ records|length }}<br>
                     <strong>QR Code:</strong><br>
                     <a href="{{ qr_code_url }}" target="_blank">
@@ -158,7 +158,7 @@
                         <strong>Play Store URL:</strong> <a href="{{ code[3] }}" target="_blank">{{ code[3] }}</a>
                     </div>
                     <div>
-                        <strong>Access Records:</strong>
+                        <strong>Tracking Info:</strong>
                         <ul>
                             {% for record in records %}
                                 <li>{{ record[2] }} | Region: {{ record[5] }} | Browser: {{ record[6] }} | OS: {{ record[7] }} | Language: {{ record[8] }} | Referrer: {{ record[9] }}</li>
