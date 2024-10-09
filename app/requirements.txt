@@ -10,3 +10,4 @@ qrcode==8.0
 Werkzeug==3.0.4
 zipp==3.20.2
 requests==2.32.3
+user-agents==2.2.0
