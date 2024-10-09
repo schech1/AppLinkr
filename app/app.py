@@ -5,6 +5,7 @@ import os
 import sqlite3
 import uuid  
 import base64
+from user_tracking import detect_browser_and_os, get_client_ip, get_location, detect_device
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24) 
@@ -23,14 +24,7 @@ SERVER_URL = os.getenv("SERVER_URL")
 PASSWORD = os.getenv("PASSWORD")
 
 
-def get_client_ip():
-    """Get the client IP address."""
-    if 'X-Forwarded-For' in request.headers:
-        ip_address = request.headers['X-Forwarded-For'].split(',')[0]
-        print(ip_address, flush=True)
-    else:
-        ip_address = request.remote_addr
-    return ip_address
+
 
 
 def get_db():
@@ -76,14 +70,7 @@ def delete_qr_code_by_id(qr_code_id):
     db.execute('DELETE FROM qr_code_tracking WHERE qr_code_id = ?', (qr_code_id,))
     db.commit()
 
-def detect_device(user_agent):
-    """Detect the device based on the User-Agent string."""
-    if "Android" in user_agent:
-        return "android"
-    elif "iPhone" in user_agent or "iPad" in user_agent:
-        return "ios"
-    else:
-        return "unknown"
+
 
 @app.route('/')
 def index():
@@ -129,6 +116,7 @@ def generate_qr():
         border=4,
     )
     qr.add_data(qr_url)
+
     qr.make(fit=True)
 
     img = qr.make_image(fill='black', back_color='white')
@@ -172,23 +160,36 @@ def serve_qr_code(code_id):
 @app.route('/redirect')
 def redirect_to_store():
     """Redirect the user to the appropriate store based on their device."""
-    # Get the URLs from the query parameters
+    # URLs und andere Parameter aus der Anfrage abrufen
     app_store_url = request.args.get('app_store_url')
     play_store_url = request.args.get('play_store_url')
     qr_code_id = request.args.get('qr_code_id')  
     
+    # User-Agent und IP-Adresse abrufen
     user_agent = request.headers.get('User-Agent')
-    device = detect_device(user_agent)
-    
-    # Get the IP address using the new function
     ip_address = get_client_ip()
 
-    # Log access in the database
+    # Gerätetyp und Sprache erkennen
+    device = detect_device(user_agent)
+    language = request.headers.get('Accept-Language', 'Unknown')
+
+    # Referrer URL erfassen
+    referrer = request.headers.get('Referer', 'Direct Access')
+
+    # Standort über IP-Geolocation-API herausfinden
+    region = get_location(ip_address)
+
+    # Browser und Betriebssystem erkennen
+    browser, os = detect_browser_and_os(user_agent)
+
+    # Daten in der Datenbank speichern
     db = get_db()
-    db.execute('INSERT INTO qr_code_tracking (qr_code_id, device_type, ip_address) VALUES (?, ?, ?)',
-               (qr_code_id, device, ip_address))
+    db.execute('''INSERT INTO qr_code_tracking (qr_code_id, device_type, ip_address, region, browser, os, language, referrer)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+               (qr_code_id, device, ip_address, region, browser, os, language, referrer))
     db.commit()
 
+    # Weiterleiten zu den passenden URLs
     if device == "android" and play_store_url:
         return redirect(play_store_url)
     elif device == "ios" and app_store_url:
