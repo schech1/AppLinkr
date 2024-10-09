@@ -66,6 +66,11 @@ def close_db(exception):
 @app.route('/delete/<qr_code_id>', methods=['GET'])
 def delete_qr_code(qr_code_id):
     """Delete a QR code entry from the database."""
+    # Check if user is authenticated
+    if 'authenticated' not in session:
+        flash('You must be logged in to delete a QR code.', 'danger')
+        return redirect(url_for('admin'))
+
     delete_qr_code_by_id(qr_code_id)
     flash('QR code deleted successfully!', 'success')
     return redirect(url_for('admin'))  
@@ -92,8 +97,8 @@ def index():
 
     return render_template('index.html', qr_codes=[(code, tracking_data[code[0]]) for code in qr_codes])
 
-@app.route('/generate_qr', methods=['POST'])
-def generate_qr():
+@app.route('/create', methods=['POST'])
+def create():
     """Generate a QR code with a link to this Flask app's redirect URL."""
     # Get URLs and title from the form input
     title = request.form['title']
@@ -138,7 +143,7 @@ def generate_qr():
     db.commit()
 
     # Create a URL to display the QR code
-    qr_code_url = f"{SERVER_URL}{url_for('serve_qr_code', code_id=qr_code_id)}"
+    qr_code_url = f"{SERVER_URL}{url_for('show', code_id=qr_code_id)}"
 
     # Render the template with the QR code URL and updated list of QR codes
     qr_codes = db.execute('SELECT * FROM qr_codes').fetchall()
@@ -150,8 +155,8 @@ def generate_qr():
 
     return render_template('index.html', qr_code_url=qr_code_url)
 
-@app.route('/serve_qr_code/<code_id>')
-def serve_qr_code(code_id):
+@app.route('/show/<code_id>')
+def show(code_id):
     """Serve the generated QR code image."""
     # Retrieve the QR code image from the database
     db = get_db()
@@ -245,7 +250,7 @@ def admin():
 
     # Create a list of QR codes with the serve URL
     qr_codes_with_url = [
-        (code, f"{SERVER_URL}/serve_qr_code/{code[0]}", tracking_data[code[0]])
+        (code, f"{SERVER_URL}/show/{code[0]}", tracking_data[code[0]])
         for code in qr_codes
     ]
 
