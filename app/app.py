@@ -1,4 +1,5 @@
 from flask import Flask, request, redirect, url_for, send_file, render_template, g, session, flash
+from functools import wraps
 import qrcode
 import io
 import os
@@ -199,6 +200,7 @@ def b64encode_filter(data):
 ### Admin Area
 
 def require_authentication(f):
+    @wraps(f)  # Preserve the original function's metadata
     def decorated_function(*args, **kwargs):
         if 'authenticated' not in session:
             flash('You must be logged in to access this page.', 'danger')
