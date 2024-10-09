@@ -25,8 +25,6 @@ PASSWORD = os.getenv("PASSWORD")
 
 
 
-
-
 def get_db():
     """Get a database connection."""
     if 'db' not in g:
@@ -62,26 +60,6 @@ def close_db(exception):
     db = g.pop('db', None)
     if db is not None:
         db.close()
-
-@app.route('/delete/<qr_code_id>', methods=['GET'])
-def delete_qr_code(qr_code_id):
-    """Delete a QR code entry from the database."""
-    # Check if user is authenticated
-    if 'authenticated' not in session:
-        flash('You must be logged in to delete a QR code.', 'danger')
-        return redirect(url_for('admin'))
-
-    delete_qr_code_by_id(qr_code_id)
-    flash('QR code deleted successfully!', 'success')
-    return redirect(url_for('admin'))  
-
-def delete_qr_code_by_id(qr_code_id):
-    """Delete a QR code by its ID."""
-    db = get_db()
-    db.execute('DELETE FROM qr_codes WHERE id = ?', (qr_code_id,))
-    db.execute('DELETE FROM qr_code_tracking WHERE qr_code_id = ?', (qr_code_id,))
-    db.commit()
-
 
 
 @app.route('/')
@@ -217,12 +195,17 @@ def b64encode_filter(data):
         return base64.b64encode(data).decode('utf-8')
     return ''
 
-@app.route('/download_db', methods=['GET'])
-def download_db():
-    if os.path.exists(DATABASE_PATH):
-        return send_file(DATABASE_PATH, as_attachment=True)
-    else:
-        return "Database file not found.", 404
+
+### Admin Area
+
+def require_authentication(f):
+    def decorated_function(*args, **kwargs):
+        if 'authenticated' not in session:
+            flash('You must be logged in to access this page.', 'danger')
+            return redirect(url_for('admin'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
@@ -255,6 +238,34 @@ def admin():
     ]
 
     return render_template('admin.html', qr_codes=qr_codes_with_url)
+
+
+## Backup and Delete Database
+
+@app.route('/delete/<qr_code_id>', methods=['GET'])
+@require_authentication
+def delete_qr_code(qr_code_id):
+    """Delete a QR code entry from the database."""
+    delete_qr_code_by_id(qr_code_id)
+    flash('QR code deleted successfully!', 'success')
+    return redirect(url_for('admin'))  
+
+def delete_qr_code_by_id(qr_code_id):
+    """Delete a QR code by its ID."""
+    db = get_db()
+    db.execute('DELETE FROM qr_codes WHERE id = ?', (qr_code_id,))
+    db.execute('DELETE FROM qr_code_tracking WHERE qr_code_id = ?', (qr_code_id,))
+    db.commit()
+
+
+@app.route('/download_db', methods=['GET'])
+@require_authentication
+def download_db():
+    if os.path.exists(DATABASE_PATH):
+        return send_file(DATABASE_PATH, as_attachment=True)
+    else:
+        return "Database file not found.", 404
+
 
 @app.route('/logout')
 def logout():
