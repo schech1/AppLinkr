@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AppLinkr - Code Statistics</title>
@@ -164,6 +165,18 @@
                                 <li>{{ record[2] }} | Region: {{ record[5] }} | Browser: {{ record[6] }} | OS: {{ record[7] }} | Language: {{ record[8] }} | Referrer: {{ record[9] }}</li>
                             {% endfor %}
                         </ul>
+
+                        <h2>Statistics Overview</h2>
+                        <div>
+                            <canvas id="scansChart" width="400" height="200"></canvas>
+                            <canvas id="deviceChart" width="400" height="200"></canvas>
+                            <canvas id="browserChart" width="400" height="200"></canvas>
+                            <canvas id="osChart" width="400" height="200"></canvas>
+                            <canvas id="regionChart" width="400" height="200"></canvas>
+                        </div>
+                        
+
+
                     </div>
                 </div>
                 <div class="actions">
@@ -176,6 +189,138 @@
         </form>
     {% endif %}
 
+
+    <script>
+        async function fetchStats() {
+            const response = await fetch('/api/stats');
+            const stats = await response.json();
+    
+            // Prepare data for the scans chart
+            const scanLabels = stats.total_scans.map(item => `QR ${item[0]}`);
+            const scanData = stats.total_scans.map(item => item[1]);
+    
+            // Create scans chart
+            new Chart(document.getElementById('scansChart'), {
+                type: 'bar',
+                data: {
+                    labels: scanLabels,
+                    datasets: [{
+                        label: 'Total Scans per QR Code',
+                        data: scanData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+    
+            // Prepare data for the device distribution chart
+            const deviceLabels = Object.keys(stats.device_distribution);
+            const deviceData = Object.values(stats.device_distribution);
+    
+            // Create device distribution chart
+            new Chart(document.getElementById('deviceChart'), {
+                type: 'pie',
+                data: {
+                    labels: deviceLabels,
+                    datasets: [{
+                        label: 'Device Distribution',
+                        data: deviceData,
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
+                    }]
+                }
+            });
+    
+            // Prepare data for the browser distribution chart
+            const browserLabels = Object.keys(stats.browser_distribution);
+            const browserData = Object.values(stats.browser_distribution);
+    
+            // Create browser distribution chart
+            new Chart(document.getElementById('browserChart'), {
+                type: 'bar',
+                data: {
+                    labels: browserLabels,
+                    datasets: [{
+                        label: 'Browser Distribution',
+                        data: browserData,
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+    
+            // Prepare data for the OS distribution chart
+            const osLabels = Object.keys(stats.os_distribution);
+            const osData = Object.values(stats.os_distribution);
+    
+            // Create OS distribution chart
+            new Chart(document.getElementById('osChart'), {
+                type: 'bar',
+                data: {
+                    labels: osLabels,
+                    datasets: [{
+                        label: 'Operating System Distribution',
+                        data: osData,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+    
+            // Prepare data for the region distribution chart
+            const regionLabels = Object.keys(stats.region_distribution);
+            const regionData = Object.values(stats.region_distribution);
+    
+            // Create region distribution chart
+            new Chart(document.getElementById('regionChart'), {
+                type: 'bar',
+                data: {
+                    labels: regionLabels,
+                    datasets: [{
+                        label: 'Region Distribution',
+                        data: regionData,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    
+        // Call the function to fetch stats when the page loads
+        window.onload = fetchStats;
+    </script>
+    
 
     <script>
         function toggleMenu() {
