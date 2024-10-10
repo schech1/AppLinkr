@@ -1,4 +1,4 @@
-from flask import request, redirect, render_template, send_file, session, flash, url_for
+from flask import request, redirect, render_template, send_file, session, flash, url_for, jsonify
 import uuid
 import qrcode
 import io
@@ -9,6 +9,7 @@ from db import delete_qr_code_by_id
 from utils import is_valid_url, process_metrics
 from metrics import  get_client_ip
 import os
+
 
 
 def setup_routes(app, SERVER_URL, PASSWORD):
@@ -97,6 +98,42 @@ def setup_routes(app, SERVER_URL, PASSWORD):
             return "Invalid or missing URL", 400
 
         return redirect(qr_code_data[0])
+
+
+    @app.route('/api/stats')
+    def get_stats():
+        db = get_db()
+        cursor = db.cursor()
+
+        # Get total scans per QR code
+        cursor.execute('SELECT qr_code_id, COUNT(*) FROM qr_code_tracking GROUP BY qr_code_id')
+        total_scans = cursor.fetchall()
+
+        # Get device type distribution
+        cursor.execute('SELECT device_type, COUNT(*) FROM qr_code_tracking GROUP BY device_type')
+        device_distribution = cursor.fetchall()
+
+        # Get browser distribution
+        cursor.execute('SELECT browser, COUNT(*) FROM qr_code_tracking GROUP BY browser')
+        browser_distribution = cursor.fetchall()
+
+        # Get OS distribution
+        cursor.execute('SELECT os, COUNT(*) FROM qr_code_tracking GROUP BY os')
+        os_distribution = cursor.fetchall()
+
+        # Get region distribution
+        cursor.execute('SELECT region, COUNT(*) FROM qr_code_tracking GROUP BY region')
+        region_distribution = cursor.fetchall()
+
+        return jsonify({
+            'total_scans': total_scans,
+            'device_distribution': dict(device_distribution),
+            'browser_distribution': dict(browser_distribution),
+            'os_distribution': dict(os_distribution),
+            'region_distribution': dict(region_distribution)
+        })
+
+
 
     @app.route('/show/<code_id>')
     def show(code_id):
