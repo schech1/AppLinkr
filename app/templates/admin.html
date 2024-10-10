@@ -176,8 +176,7 @@
             <div class="card">
                 <div class="card-title">{{ code[1] }}</div> <!-- Title -->
                 <div class="card-content">
-                    <strong>ID:</strong> {{ code[0] }}<br>
-                    <strong>Scans:</strong> {{ records|length }}<br>
+                    <strong>ID:</strong> {{ code[0] }}<br>                    
                     <strong>QR Code:</strong><br>
                     <a href="{{ qr_code_url }}" target="_blank">
                         <img src="{{ qr_code_url }}" alt="QR Code">
@@ -189,31 +188,11 @@
                     <div>
                         <strong>Tracking Info:</strong>
                         <ul>
+                            <strong>Scans:</strong> {{ records|length }}<br>
                             {% for record in records %}
                                 <li>{{ record[2] }} | Region: {{ record[5] }} | Browser: {{ record[6] }} | OS: {{ record[7] }} | Language: {{ record[8] }} | Referrer: {{ record[9] }}</li>
                             {% endfor %}
                         </ul>
-
-
-                        <h2>Statistics Overview</h2>
-                        <div class="chart-wrapper">  <!-- Added wrapper for charts -->
-                            <div class="chart-container">
-                                <canvas id="deviceChart"></canvas>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="browserChart"></canvas>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="osChart"></canvas>
-                            </div>
-                            <div class="chart-container">
-                                <canvas id="regionChart"></canvas>
-                            </div>
-                        </div>
-                       
-                        
-
-
                     </div>
                 </div>
                 <div class="actions">
