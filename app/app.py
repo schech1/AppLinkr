@@ -1,6 +1,6 @@
-from flask import Flask, g, session, redirect, url_for, render_template, flash, send_file
+from flask import Flask
 import os
-from db import get_db, close_db
+from db import close_db
 from routes import setup_routes
 
 app = Flask(__name__)

@@ -1,6 +1,5 @@
 import sqlite3
 from flask import g
-from db import delete_qr_code_by_id
 from db import DATABASE_PATH
 
 
