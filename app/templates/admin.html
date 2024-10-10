@@ -10,6 +10,7 @@
 </head>
 <body>
     <!-- Navigation bar -->
+    <div class="wrapper"> 
     <nav>
         <div class="menu-icon" onclick="toggleMenu()">☰</div>
         <h1>AppLinkr</h1>
@@ -73,6 +74,7 @@
             <input type="submit" value="Download Database Backup" class="delete-button">
         </form>
     {% endif %}
+</div>
     <script>
         function toggleMenu() {
             const menu = document.querySelector('.menu');
