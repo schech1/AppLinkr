@@ -1,22 +1,22 @@
 body {
     font-family: 'Arial', sans-serif;
     margin: 0;
-    padding: 50px;
+    padding: 20px;
     background-color: #f0f0f0;
     color: #333;
     transition: background-color 0.3s, color 0.3s;
-    max-width: 1200px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    justify-content: center; 
+    align-items: flex-start; 
+    min-height: 100vh; 
 }
 
 .wrapper {
-    max-width: 800px; /* Maximum width of the content */
-    width: 100%; /* Allow full width for smaller screens */
-    padding: 20px; /* Padding inside the wrapper */
-    background-color: white; /* Background color for the content area */
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Shadow effect */
+    max-width: 800px; 
+    width: 100%; 
+    padding: 20px; 
+    background-color: white; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 h1, h2 {
