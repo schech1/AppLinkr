@@ -87,8 +87,7 @@ def setup_routes(app, SERVER_URL, PASSWORD):
         """Redirect to the standard URL content."""
         qr_code_id = request.args.get('qr_code_id')    
         user_agent = request.headers.get('User-Agent')
-        ip_address = get_client_ip()
-        process_metrics(qr_code_id, user_agent, ip_address)
+        process_metrics(qr_code_id, user_agent)
 
         # Retrieve the URL content from the database
         db = get_db()
