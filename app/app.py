@@ -33,11 +33,12 @@ def get_db():
         
         # Create qr_codes table with qr_image allowing NULL values
         g.db.execute('''CREATE TABLE IF NOT EXISTS qr_codes
-                        (id TEXT PRIMARY KEY,  -- Use TEXT for UUID
+                        (id TEXT PRIMARY KEY,
                          title TEXT NOT NULL,
+                         content TEXT,                     
                          app_store_url TEXT NOT NULL,
                          play_store_url TEXT NOT NULL,
-                         qr_image BLOB)''')  # Allow NULL values for qr_image
+                         qr_image BLOB)''')  
 
         g.db.execute('''CREATE TABLE IF NOT EXISTS qr_code_tracking
                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -78,28 +79,31 @@ def index():
 
 @app.route('/create', methods=['POST'])
 def create():
-    """Generate a QR code with a link to this Flask app's redirect URL."""
-    # Get URLs and title from the form input
+    """Generate a QR code with either custom content or app store links."""
     title = request.form['title']
-    app_store_url = request.form['app_store_url']
-    play_store_url = request.form['play_store_url']
-   
+    app_store_url = request.form.get('app_store_url')
+    play_store_url = request.form.get('play_store_url')
+    content = request.form.get('content')
+
     # Create a database connection and cursor
     db = get_db()
-    cursor = db.cursor() 
+    cursor = db.cursor()
 
     # Generate a new UUID for the QR code
     qr_code_id = str(uuid.uuid4())
 
-    # insert a record without the image 
-    cursor.execute('INSERT INTO qr_codes (id, title, app_store_url, play_store_url) VALUES (?, ?, ?, ?)',
-                   (qr_code_id, title, app_store_url, play_store_url))
+    if content:  # If content for standard QR code is provided
+        qr_url = content
+        cursor.execute('INSERT INTO qr_codes (id, title, content) VALUES (?, ?, ?)', 
+                       (qr_code_id, title, content))
+    else:  # If the App Store and Play Store URLs are provided
+        qr_url = f"{SERVER_URL}/redirect?app_store_url={app_store_url}&play_store_url={play_store_url}&qr_code_id={qr_code_id}"
+        cursor.execute('INSERT INTO qr_codes (id, title, app_store_url, play_store_url) VALUES (?, ?, ?, ?)', 
+                       (qr_code_id, title, app_store_url, play_store_url))
+
     db.commit()
 
-    # Create the URL 
-    qr_url = f"{SERVER_URL}/redirect?app_store_url={app_store_url}&play_store_url={play_store_url}&qr_code_id={qr_code_id}"
-
-    # Generate the QR code with the updated URL
+    # Generate the QR code
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -107,9 +111,7 @@ def create():
         border=4,
     )
     qr.add_data(qr_url)
-
     qr.make(fit=True)
-
     img = qr.make_image(fill='black', back_color='white')
 
     # Save the QR code image
@@ -117,22 +119,22 @@ def create():
     img.save(img_buf, 'PNG')
     img_buf.seek(0)
 
-    # update record with image
+    # Update the database with the QR code image
     cursor.execute('UPDATE qr_codes SET qr_image = ? WHERE id = ?', (img_buf.getvalue(), qr_code_id))
     db.commit()
 
-    # Create a URL to display the QR code
     qr_code_url = f"{SERVER_URL}{url_for('show', code_id=qr_code_id)}"
 
-    # Render the template with the QR code URL and updated list of QR codes
+    # Fetch all QR codes again to update the page
     qr_codes = db.execute('SELECT * FROM qr_codes').fetchall()
-    
-    # Fetch tracking information for each QR code
     tracking_data = {}
     for code in qr_codes:
         tracking_data[code[0]] = db.execute('SELECT * FROM qr_code_tracking WHERE qr_code_id = ?', (code[0],)).fetchall()
 
     return render_template('index.html', qr_code_url=qr_code_url)
+
+
+
 
 @app.route('/show/<code_id>')
 def show(code_id):

@@ -52,7 +52,7 @@
         .qr-url {
             margin: 10px 0;
             font-size: 14px;
-            color: #007bff; /* Color for the link */
+            color: #007bff;
         }
         .copy-button {
             background-color: #007bff;
@@ -96,8 +96,6 @@
             align-items: center;
             background-color: #007bff;
             padding: 10px;
-            position: relative;
-      
         }
         nav a {
             color: white;
@@ -112,7 +110,6 @@
         .menu {
             display: flex;
             gap: 20px;
-            
         }
         .menu-icon {
             display: none; 
@@ -124,18 +121,47 @@
                 display: none; 
                 flex-direction: column;
                 gap: 10px;
-                position:relative;
                 background-color: #007bff; 
                 width: 100%; 
                 z-index: 1000; 
                 padding: 10px 0; 
             }
             .menu.active {
-                display: flex; 
+                display: flex;
             }
             .menu-icon {
-                display: block; 
+                display: block;
             }
+        }
+        /* Tab Styles */
+        .tab-container {
+            margin-top: 20px;
+        }
+        .tab-buttons {
+            display: flex;
+            justify-content: space-around;
+        }
+        .tab-buttons button {
+            flex: 1;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .tab-buttons button:hover {
+            background-color: #0056b3;
+        }
+        .tab-buttons button.active {
+            background-color: #0056b3;
+        }
+        .tab-content {
+            display: none;
+            margin-top: 20px;
+        }
+        .tab-content.active {
+            display: block;
         }
     </style>
 </head>
@@ -152,19 +178,41 @@
     </nav>
 
     <h1>AppLinkr - QR Codes for AppStores</h1>
-    <form action="/create" method="post">
-        <label for="title">Title:</label><br>
-        <input type="text" id="title" name="title" required><br><br>
 
-        <label for="app_store_url">App Store URL:</label><br>
-        <input type="text" id="app_store_url" name="app_store_url" required><br><br>
+    <!-- Tab Container -->
+    <div class="tab-container">
+        <div class="tab-buttons">
+            <button class="active" onclick="showTab('appstore-tab')">AppStore Links</button>
+            <button onclick="showTab('standard-qr-tab')">Standard QR</button>
+        </div>
 
-        <label for="play_store_url">Play Store URL:</label><br>
-        <input type="text" id="play_store_url" name="play_store_url" required><br><br>
+        <!-- AppStore Links Form -->
+        <div id="appstore-tab" class="tab-content active">
+            <form action="/create" method="post">
+                <label for="title">Title:</label><br>
+                <input type="text" id="title" name="title" required><br><br>
 
-        <input type="submit" value="Generate QR Code">
-    </form>
-    
+                <label for="app_store_url">App Store URL:</label><br>
+                <input type="text" id="app_store_url" name="app_store_url" required><br><br>
+
+                <label for="play_store_url">Play Store URL:</label><br>
+                <input type="text" id="play_store_url" name="play_store_url" required><br><br>
+
+                <input type="submit" value="Generate QR Code">
+            </form>
+        </div>
+
+        <!-- Standard QR Form -->
+        <div id="standard-qr-tab" class="tab-content">
+            <form action="/create_standard_qr" method="post">
+                <label for="qr_content">QR Content:</label><br>
+                <input type="text" id="qr_content" name="qr_content" placeholder="Enter content for standard QR" required><br><br>
+
+                <input type="submit" value="Generate Standard QR Code">
+            </form>
+        </div>
+    </div>
+
     {% if qr_code_url %}
     <div class="qr-container">
         <h2>Your QR Code:</h2>
@@ -195,6 +243,20 @@
             document.execCommand("copy");
             document.body.removeChild(textArea);
             alert("QR Code URL copied to clipboard!");
+        }
+
+        function showTab(tabId) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+
+            // Remove active class from all buttons
+            const tabButtons = document.querySelectorAll('.tab-buttons button');
+            tabButtons.forEach(button => button.classList.remove('active'));
+
+            // Show the selected tab and highlight the button
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
         }
     </script>
 </body>
