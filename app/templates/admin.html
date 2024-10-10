@@ -24,6 +24,7 @@
             font-size: 24px;
             cursor: pointer;
         }
+        
         nav {
             display: flex;
             justify-content: space-between;
@@ -32,6 +33,7 @@
             padding: 10px;
             position: relative;
         }
+        
         nav a {
             color: white;
             text-decoration: none;
@@ -42,16 +44,18 @@
             background-color: #0056b3;
             border-radius: 4px;
         }
+        
         .menu {
             display: flex;
             gap: 20px;
         }
+        
         @media (max-width: 768px) {
             .menu {
                 display: none; 
                 flex-direction: column;
                 gap: 10px;
-                position:relative;
+                position: relative;
                 background-color: #007bff; 
                 width: 100%; 
                 z-index: 1000; 
@@ -70,7 +74,10 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             margin: 10px 0;
-            padding: 20px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items:base;
             transition: transform 0.2s;
         }
 
@@ -81,16 +88,19 @@
         .card-title {
             font-weight: bold;
             margin-bottom: 10px;
+            text-align: left;
         }
 
         .card-content {
             margin-bottom: 15px;
+            text-align: left;
         }
 
         .card img {
-            max-width: 100px;
+            max-width: 80px;  /* Reduced size for QR code */
             height: auto;
             border-radius: 4px;
+            margin-bottom: 10px;
         }
 
         .url {
@@ -103,7 +113,7 @@
             color: white;
             border: none;
             cursor: pointer;
-            padding: 10px 15px;
+            padding: 8px 12px;  /* Reduced padding */
             border-radius: 4px;
             transition: background-color 0.3s;
         }
@@ -116,14 +126,15 @@
         .chart-container {
             position: relative;
             margin: auto;
-            max-width: 600px;
-            padding: 20px;
+            width: 50px;  /* Small width for icon-style charts */
+            height: 50px;  /* Small height for icon-style charts */
+            padding: 5px;
         }
 
         @media (max-width: 768px) {
             .chart-container {
-                max-width: 90%;
-                padding: 10px;
+                width: 40px;  /* Smaller for mobile */
+                height: 40px;  /* Smaller for mobile */
             }
         }
     </style>
@@ -174,19 +185,19 @@
 
                         <h2>Statistics Overview</h2>
                         <div class="chart-container">
-                            <canvas id="scansChart"></canvas>
+                            <canvas id="scansChart{{ loop.index }}"></canvas> <!-- Updated for multiple charts -->
                         </div>
                         <div class="chart-container">
-                            <canvas id="deviceChart"></canvas>
+                            <canvas id="deviceChart{{ loop.index }}"></canvas>
                         </div>
                         <div class="chart-container">
-                            <canvas id="browserChart"></canvas>
+                            <canvas id="browserChart{{ loop.index }}"></canvas>
                         </div>
                         <div class="chart-container">
-                            <canvas id="osChart"></canvas>
+                            <canvas id="osChart{{ loop.index }}"></canvas>
                         </div>
                         <div class="chart-container">
-                            <canvas id="regionChart"></canvas>
+                            <canvas id="regionChart{{ loop.index }}"></canvas>
                         </div>
                     </div>
                 </div>
@@ -205,32 +216,32 @@
             const response = await fetch('/api/stats');
             const stats = await response.json();
     
-            // Prepare data for the scans chart
-            const scanLabels = stats.total_scans.map(item => `QR ${item[0]}`);
-            const scanData = stats.total_scans.map(item => item[1]);
-    
-            // Create scans chart
-            new Chart(document.getElementById('scansChart'), {
-                type: 'bar',
-                data: {
-                    labels: scanLabels,
-                    datasets: [{
-                        label: 'Total Scans per QR Code',
-                        data: scanData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
+            // Loop through each QR code to create its charts
+            stats.total_scans.forEach((item, index) => {
+                const scanLabels = [`QR ${item[0]}`];
+                const scanData = [item[1]];
+
+                // Create scans chart
+                new Chart(document.getElementById(`scansChart${index + 1}`), {
+                    type: 'doughnut',
+                    data: {
+                        labels: scanLabels,
+                        datasets: [{
+                            label: 'Total Scans',
+                            data: scanData,
+                            backgroundColor: ['#36A2EB'],
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false,  // Hide legend for small charts
+                            },
                         }
                     }
-                }
+                });
             });
     
             // Prepare data for the device distribution chart
@@ -238,8 +249,8 @@
             const deviceData = Object.values(stats.device_distribution);
     
             // Create device distribution chart
-            new Chart(document.getElementById('deviceChart'), {
-                type: 'pie',
+            new Chart(document.getElementById(`deviceChart`), {
+                type: 'doughnut',
                 data: {
                     labels: deviceLabels,
                     datasets: [{
@@ -251,6 +262,11 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false,  // Hide legend for small charts
+                        },
+                    }
                 }
             });
     
@@ -259,25 +275,23 @@
             const browserData = Object.values(stats.browser_distribution);
     
             // Create browser distribution chart
-            new Chart(document.getElementById('browserChart'), {
-                type: 'bar',
+            new Chart(document.getElementById(`browserChart`), {
+                type: 'doughnut',
                 data: {
                     labels: browserLabels,
                     datasets: [{
                         label: 'Browser Distribution',
                         data: browserData,
-                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        borderWidth: 1
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+                    plugins: {
+                        legend: {
+                            display: false,  // Hide legend for small charts
+                        },
                     }
                 }
             });
@@ -287,25 +301,23 @@
             const osData = Object.values(stats.os_distribution);
     
             // Create OS distribution chart
-            new Chart(document.getElementById('osChart'), {
-                type: 'bar',
+            new Chart(document.getElementById(`osChart`), {
+                type: 'doughnut',
                 data: {
                     labels: osLabels,
                     datasets: [{
                         label: 'Operating System Distribution',
                         data: osData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+                    plugins: {
+                        legend: {
+                            display: false,  // Hide legend for small charts
+                        },
                     }
                 }
             });
@@ -315,25 +327,23 @@
             const regionData = Object.values(stats.region_distribution);
     
             // Create region distribution chart
-            new Chart(document.getElementById('regionChart'), {
-                type: 'bar',
+            new Chart(document.getElementById(`regionChart`), {
+                type: 'doughnut',
                 data: {
                     labels: regionLabels,
                     datasets: [{
                         label: 'Region Distribution',
                         data: regionData,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+                    plugins: {
+                        legend: {
+                            display: false,  // Hide legend for small charts
+                        },
                     }
                 }
             });
@@ -343,7 +353,6 @@
         window.onload = fetchStats;
     </script>
     
-
     <script>
         function toggleMenu() {
             const menu = document.querySelector('.menu');
