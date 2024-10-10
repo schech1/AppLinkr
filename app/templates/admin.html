@@ -122,17 +122,28 @@
 
 
 
+     .chart-wrapper {
+        display: flex;                /* Use flexbox to align charts in a row */
+        flex-wrap: wrap;             /* Allow wrapping for smaller screens */
+        justify-content: space-between; /* Space out the charts evenly */
+        margin: 20px 0;              /* Add margin around the charts */
+    }
+
     .chart-container {
-        position: relative;
-     
-        height: 200px;
-        margin: 0 auto;
+        width: 23%;                  /* Set each chart container width to 23% */
+        height: 200px;               /* Set a fixed height for the charts */
+        margin: 0 10px;              /* Add margin between charts */
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Optional: add shadow for better look */
+        background: white;           /* Optional: background color */
+        border-radius: 8px;         /* Optional: rounded corners */
+        overflow: hidden;            /* Hide overflow */
     }
 
     canvas {
-        width: 100% !important; 
-        height: 100% !important; 
+        width: 100% !important;      /* Ensure canvas is full width */
+        height: 100% !important;     /* Ensure canvas is full height */
     }
+
 
     </style>
 </head>
@@ -181,21 +192,21 @@
                         </ul>
 
 
-                            <h2>Statistics Overview</h2>
-                            <div>
-                                <div class="chart-container">
-                                    <canvas id="deviceChart"></canvas>
-                                </div>
-                                <div class="chart-container">
-                                    <canvas id="browserChart"></canvas>
-                                </div>
-                                <div class="chart-container">
-                                    <canvas id="osChart"></canvas>
-                                </div>
-                                <div class="chart-container">
-                                    <canvas id="regionChart"></canvas>
-                                </div>
+                        <h2>Statistics Overview</h2>
+                        <div class="chart-wrapper">  <!-- Added wrapper for charts -->
+                            <div class="chart-container">
+                                <canvas id="deviceChart"></canvas>
                             </div>
+                            <div class="chart-container">
+                                <canvas id="browserChart"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="osChart"></canvas>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="regionChart"></canvas>
+                            </div>
+                        </div>
                        
                         
 
