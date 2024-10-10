@@ -1,7 +1,5 @@
 import sqlite3
 from flask import g
-from db import DATABASE_PATH
-
 
 
 DATABASE_FOLDER = "db"
