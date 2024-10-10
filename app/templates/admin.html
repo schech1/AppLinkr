@@ -19,7 +19,6 @@
             color: #007bff;
         }
 
-        
         .menu-icon {
             display: none; 
             font-size: 24px;
@@ -32,7 +31,6 @@
             background-color: #007bff;
             padding: 10px;
             position: relative;
-      
         }
         nav a {
             color: white;
@@ -47,12 +45,6 @@
         .menu {
             display: flex;
             gap: 20px;
-            
-        }
-        .menu-icon {
-            display: none; 
-            font-size: 24px;
-            cursor: pointer;
         }
         @media (max-width: 768px) {
             .menu {
@@ -120,6 +112,20 @@
             background-color: #c82333;
         }
 
+        /* Styles for the charts */
+        .chart-container {
+            position: relative;
+            margin: auto;
+            max-width: 600px;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                max-width: 90%;
+                padding: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -167,16 +173,21 @@
                         </ul>
 
                         <h2>Statistics Overview</h2>
-                        <div>
-                            <canvas id="scansChart" width="50" height="25"></canvas>
-                            <canvas id="deviceChart" width="50" height="25"></canvas>
-                            <canvas id="browserChart" width="50" height="25"></canvas>
-                            <canvas id="osChart" width="50" height="25"></canvas>
-                            <canvas id="regionChart" width="50" height="25"></canvas>
+                        <div class="chart-container">
+                            <canvas id="scansChart"></canvas>
                         </div>
-                        
-
-
+                        <div class="chart-container">
+                            <canvas id="deviceChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="browserChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="osChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="regionChart"></canvas>
+                        </div>
                     </div>
                 </div>
                 <div class="actions">
@@ -188,7 +199,6 @@
             <input type="submit" value="Download Database Backup" class="delete-button">
         </form>
     {% endif %}
-
 
     <script>
         async function fetchStats() {
@@ -213,6 +223,8 @@
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true
@@ -235,6 +247,10 @@
                         data: deviceData,
                         backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
                     }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                 }
             });
     
@@ -256,6 +272,8 @@
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true
@@ -282,6 +300,8 @@
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true
@@ -308,6 +328,8 @@
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     scales: {
                         y: {
                             beginAtZero: true
