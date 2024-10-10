@@ -140,7 +140,13 @@ def create():
 @app.route('/redirect_standard')
 def redirect_standard():
     """Redirect to the standard URL content."""
-    qr_code_id = request.args.get('qr_code_id')
+    # Get URLs and parameters from the request
+    qr_code_id = request.args.get('qr_code_id')    
+    # Get User-Agent and IP address
+    user_agent = request.headers.get('User-Agent')
+    ip_address = get_client_ip()
+    # Collect tracking information
+    process_metrics(qr_code_id, user_agent, ip_address)
 
     # Retrieve the URL content from the database
     db = get_db()
@@ -165,45 +171,55 @@ def show(code_id):
     buf = io.BytesIO(qr_code_data[0])
     return send_file(buf, mimetype='image/png')
 
-@app.route('/redirect')
-def redirect_to_store():
-    """Redirect the user to the appropriate store based on their device."""
-    # URLs und andere Parameter aus der Anfrage abrufen
-    app_store_url = request.args.get('app_store_url')
-    play_store_url = request.args.get('play_store_url')
-    qr_code_id = request.args.get('qr_code_id')  
-    
-    # User-Agent und IP-Adresse abrufen
-    user_agent = request.headers.get('User-Agent')
-    ip_address = get_client_ip()
 
-    # Gerätetyp und Sprache erkennen
+def process_metrics(qr_code_id, user_agent, ip_address):
+    """Collect tracking information and save it to the database."""
+    # Identify the device and language
     device = detect_device(user_agent)
     language = request.headers.get('Accept-Language', 'Unknown')
 
-    # Referrer URL erfassen
+    # Get the referrer URL
     referrer = request.headers.get('Referer', 'Direct Access')
 
-    # Standort über IP-Geolocation-API herausfinden
+    # Get the region using IP geolocation
     region = get_location(ip_address)
 
-    # Browser und Betriebssystem erkennen
+    # Detect browser and operating system
     browser, os = detect_browser_and_os(user_agent)
 
-    # Daten in der Datenbank speichern
+    # Store the collected data in the database
     db = get_db()
     db.execute('''INSERT INTO qr_code_tracking (qr_code_id, device_type, ip_address, region, browser, os, language, referrer)
                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
                (qr_code_id, device, ip_address, region, browser, os, language, referrer))
     db.commit()
+    return device
 
-    # Weiterleiten zu den passenden URLs
+
+
+@app.route('/redirect')
+def redirect_to_store():
+    """Redirect the user to the appropriate store based on their device."""
+    # Get URLs and parameters from the request
+    app_store_url = request.args.get('app_store_url')
+    play_store_url = request.args.get('play_store_url')
+    qr_code_id = request.args.get('qr_code_id')  
+    
+    # Get User-Agent and IP address
+    user_agent = request.headers.get('User-Agent')
+    ip_address = get_client_ip()
+
+    # Collect tracking information and get device type
+    device = process_metrics(qr_code_id, user_agent, ip_address)
+
+    # Redirect based on the detected device
     if device == "android" and play_store_url:
         return redirect(play_store_url)
     elif device == "ios" and app_store_url:
         return redirect(app_store_url)
     else:
         return "Device not recognized or no URL provided", 400
+
 
 
 @app.template_filter('b64encode')
