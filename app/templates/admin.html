@@ -182,7 +182,7 @@
                         <img src="{{ qr_code_url }}" alt="QR Code">
                     </a>
                     <div class="url">
-                        <strong>Direct Redirect:</strong> <a href="{{ code[2] }}" target="_blank">{{ code[2] }}</a><br>                
+                        <strong>Direct Redirect:</strong> <a href="{{ code[2] }}" target="_blank">{{ code[2] }}</a><br>
                         <strong>App Store URL:</strong> <a href="{{ code[3] }}" target="_blank">{{ code[3] }}</a><br>
                         <strong>Play Store URL:</strong> <a href="{{ code[4] }}" target="_blank">{{ code[4] }}</a>
                     </div>
@@ -205,6 +205,17 @@
             <input type="submit" value="Download Database Backup" class="delete-button">
         </form>
     {% endif %}
+    <script>
+        function toggleMenu() {
+            const menu = document.querySelector('.menu');
+            menu.classList.toggle('active');
+        }
 
+        function confirmDelete(qrCodeId) {
+            if (confirm('Are you sure you want to delete this QR code?')) {
+                window.location.href = '/delete/' + qrCodeId;
+            }
+        }
+    </script>
 </body>
 </html>
