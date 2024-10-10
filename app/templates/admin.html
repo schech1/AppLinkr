@@ -121,28 +121,31 @@
         }
 
 
-
-     .chart-wrapper {
-        display: flex;                /* Use flexbox to align charts in a row */
-        flex-wrap: wrap;             /* Allow wrapping for smaller screens */
-        justify-content: space-between; /* Space out the charts evenly */
-        margin: 20px 0;              /* Add margin around the charts */
+            .chart-wrapper {
+        display: flex;                      /* Use flexbox to align charts in a row */
+        flex-wrap: wrap;                   /* Allow wrapping for smaller screens */
+        justify-content: center;            /* Center the charts */
+        margin: 20px 0;                    /* Add margin around the charts */
     }
 
     .chart-container {
-        width: 23%;                  /* Set each chart container width to 23% */
-        height: 200px;               /* Set a fixed height for the charts */
-        margin: 0 10px;              /* Add margin between charts */
+        flex: 0 1 200px;                   /* Each chart has a base width of 200px */
+        height: 150px;                     /* Set a fixed height for the charts */
+        margin: 10px;                      /* Add margin between charts */
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Optional: add shadow for better look */
-        background: white;           /* Optional: background color */
-        border-radius: 8px;         /* Optional: rounded corners */
-        overflow: hidden;            /* Hide overflow */
+        background: white;                 /* Optional: background color */
+        border-radius: 8px;               /* Optional: rounded corners */
+        overflow: hidden;                  /* Hide overflow */
+        display: flex;                     /* Use flexbox inside container */
+        align-items: center;               /* Center align content */
+        justify-content: center;           /* Center align content */
     }
 
     canvas {
-        width: 100% !important;      /* Ensure canvas is full width */
-        height: 100% !important;     /* Ensure canvas is full height */
+        width: 100% !important;            /* Ensure canvas is full width */
+        height: 100% !important;           /* Ensure canvas is full height */
     }
+
 
 
     </style>
