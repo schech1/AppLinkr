@@ -202,15 +202,17 @@
             </form>
         </div>
 
-        <!-- Standard QR Form -->
-        <div id="standard-qr-tab" class="tab-content">
-            <form action="/create_standard_qr" method="post">
-                <label for="qr_content">QR Content:</label><br>
-                <input type="text" id="qr_content" name="qr_content" placeholder="Enter content for standard QR" required><br><br>
+    <!-- Standard QR Form -->
+    <div id="standard-qr-tab" class="tab-content">
+        <form action="/create" method="post">
+            <label for="title">Title:</label><br>
+            <input type="text" id="title" name="title" required><br><br>
 
-                <input type="submit" value="Generate Standard QR Code">
-            </form>
-        </div>
+            <label for="content">URL Content:</label><br>
+            <input type="url" id="content" name="content" placeholder="Enter a valid URL" required><br><br>
+
+            <input type="submit" value="Generate QR Code">
+        </form>
     </div>
 
     {% if qr_code_url %}

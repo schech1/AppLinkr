@@ -7,6 +7,7 @@ import sqlite3
 import uuid  
 import base64
 from user_tracking import detect_browser_and_os, get_client_ip, get_location, detect_device
+import validators
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24) 
@@ -24,7 +25,9 @@ if not os.path.exists(DATABASE_FOLDER):
 SERVER_URL = os.getenv("SERVER_URL")
 PASSWORD = os.getenv("PASSWORD")
 
-
+def is_valid_url(url):
+    """Validate if the given content is a valid URL."""
+    return validators.url(url)
 
 def get_db():
     """Get a database connection."""
@@ -79,7 +82,7 @@ def index():
 
 @app.route('/create', methods=['POST'])
 def create():
-    """Generate a QR code with either custom content or app store links."""
+    """Generate a QR code with either custom URL content or app store links."""
     title = request.form['title']
     app_store_url = request.form.get('app_store_url')
     play_store_url = request.form.get('play_store_url')
@@ -93,13 +96,19 @@ def create():
     qr_code_id = str(uuid.uuid4())
 
     if content:  # If content for standard QR code is provided
-        qr_url = content
-        cursor.execute('INSERT INTO qr_codes (id, title, content) VALUES (?, ?, ?)', 
-                       (qr_code_id, title, content))
+        if not is_valid_url(content):  # Validate the URL
+            return "Invalid URL provided for standard QR", 400
+
+        qr_url = f"{SERVER_URL}/redirect_standard?qr_code_id={qr_code_id}"  # Redirect for standard QR
+        cursor.execute('INSERT INTO qr_codes (id, title, content, app_store_url, play_store_url) VALUES (?, ?, ?, ?, ?)', 
+                       (qr_code_id, title, content, "", ""))  # App Store URLs are empty for standard QR codes
     else:  # If the App Store and Play Store URLs are provided
+        if not (is_valid_url(app_store_url) and is_valid_url(play_store_url)):
+            return "Invalid URLs for App Store or Play Store", 400
+
         qr_url = f"{SERVER_URL}/redirect?app_store_url={app_store_url}&play_store_url={play_store_url}&qr_code_id={qr_code_id}"
-        cursor.execute('INSERT INTO qr_codes (id, title, app_store_url, play_store_url) VALUES (?, ?, ?, ?)', 
-                       (qr_code_id, title, app_store_url, play_store_url))
+        cursor.execute('INSERT INTO qr_codes (id, title, content, app_store_url, play_store_url) VALUES (?, ?, ?, ?, ?)', 
+                       (qr_code_id, title, "", app_store_url, play_store_url))
 
     db.commit()
 
@@ -125,16 +134,22 @@ def create():
 
     qr_code_url = f"{SERVER_URL}{url_for('show', code_id=qr_code_id)}"
 
-    # Fetch all QR codes again to update the page
-    qr_codes = db.execute('SELECT * FROM qr_codes').fetchall()
-    tracking_data = {}
-    for code in qr_codes:
-        tracking_data[code[0]] = db.execute('SELECT * FROM qr_code_tracking WHERE qr_code_id = ?', (code[0],)).fetchall()
-
     return render_template('index.html', qr_code_url=qr_code_url)
 
 
+@app.route('/redirect_standard')
+def redirect_standard():
+    """Redirect to the standard URL content."""
+    qr_code_id = request.args.get('qr_code_id')
 
+    # Retrieve the URL content from the database
+    db = get_db()
+    qr_code_data = db.execute('SELECT content FROM qr_codes WHERE id = ?', (qr_code_id,)).fetchone()
+
+    if qr_code_data is None or not is_valid_url(qr_code_data[0]):
+        return "Invalid or missing URL", 400
+
+    return redirect(qr_code_data[0])
 
 @app.route('/show/<code_id>')
 def show(code_id):
