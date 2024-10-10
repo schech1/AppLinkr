@@ -137,8 +137,8 @@
         border-radius: 8px;               /* Optional: rounded corners */
         overflow: hidden;                  /* Hide overflow */
         display: flex;                     /* Use flexbox inside container */
-        align-items: center;               /* Center align content */
-        justify-content: center;           /* Center align content */
+        align-items: baseline;               
+        justify-content: left;          
     }
 
     canvas {
@@ -228,127 +228,161 @@
 
 
     <script>
-        async function fetchStats() {
-            const response = await fetch('/api/stats');
-            const stats = await response.json();
-    
-            // Prepare data for the scans chart
-            const scanLabels = stats.total_scans.map(item => `QR ${item[0]}`);
-            const scanData = stats.total_scans.map(item => item[1]);
-    
-    
-            // Prepare data for the device distribution chart
-            const deviceLabels = Object.keys(stats.device_distribution);
-            const deviceData = Object.values(stats.device_distribution);
-    
-            // Create device distribution chart
-            new Chart(document.getElementById('deviceChart'), {
-                type: 'pie',
-                data: {
-                    labels: deviceLabels,
-                    datasets: [{
-                        label: 'Device Distribution',
-                        data: deviceData,
-                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
-                    }]
-                }
-            });
-    
-            // Prepare data for the browser distribution chart
-            const browserLabels = Object.keys(stats.browser_distribution);
-            const browserData = Object.values(stats.browser_distribution);
-    
-            // Create browser distribution chart
-            new Chart(document.getElementById('browserChart'), {
-                type: 'bar',
-                data: {
-                    labels: browserLabels,
-                    datasets: [{
-                        label: 'Browser Distribution',
-                        data: browserData,
-                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                        borderColor: 'rgba(153, 102, 255, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-    
-            // Prepare data for the OS distribution chart
-            const osLabels = Object.keys(stats.os_distribution);
-            const osData = Object.values(stats.os_distribution);
-    
-            // Create OS distribution chart
-            new Chart(document.getElementById('osChart'), {
-                type: 'bar',
-                data: {
-                    labels: osLabels,
-                    datasets: [{
-                        label: 'Operating System Distribution',
-                        data: osData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-    
-            // Prepare data for the region distribution chart
-            const regionLabels = Object.keys(stats.region_distribution);
-            const regionData = Object.values(stats.region_distribution);
-    
-            // Create region distribution chart
-            new Chart(document.getElementById('regionChart'), {
-                type: 'bar',
-                data: {
-                    labels: regionLabels,
-                    datasets: [{
-                        label: 'Region Distribution',
-                        data: regionData,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-    
-        // Call the function to fetch stats when the page loads
-        window.onload = fetchStats;
-    </script>
-    
+async function fetchStats() {
+    const response = await fetch('/api/stats');
+    const stats = await response.json();
 
-    <script>
-        function toggleMenu() {
-            const menu = document.querySelector('.menu');
-            menu.classList.toggle('active');
-        }
+    // Prepare data for the scans chart
+    const scanLabels = stats.total_scans.map(item => `QR ${item[0]}`);
+    const scanData = stats.total_scans.map(item => item[1]);
 
-        function confirmDelete(qrCodeId) {
-            if (confirm('Are you sure you want to delete this QR code?')) {
-                window.location.href = '/delete/' + qrCodeId;
+    // Create scans chart
+    new Chart(document.getElementById('scansChart'), {
+        type: 'bar',
+        data: {
+            labels: scanLabels,
+            datasets: [{
+                label: 'Total Scans per QR Code',
+                data: scanData,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false // Disable the legend
+                }
             }
         }
+    });
+
+    // Prepare data for the device distribution chart
+    const deviceLabels = Object.keys(stats.device_distribution);
+    const deviceData = Object.values(stats.device_distribution);
+
+    // Create device distribution chart
+    new Chart(document.getElementById('deviceChart'), {
+        type: 'pie',
+        data: {
+            labels: deviceLabels,
+            datasets: [{
+                data: deviceData,
+                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    display: false // Disable the legend
+                }
+            }
+        }
+    });
+
+    // Prepare data for the browser distribution chart
+    const browserLabels = Object.keys(stats.browser_distribution);
+    const browserData = Object.values(stats.browser_distribution);
+
+    // Create browser distribution chart
+    new Chart(document.getElementById('browserChart'), {
+        type: 'bar',
+        data: {
+            labels: browserLabels,
+            datasets: [{
+                label: 'Browser Distribution',
+                data: browserData,
+                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false // Disable the legend
+                }
+            }
+        }
+    });
+
+    // Prepare data for the OS distribution chart
+    const osLabels = Object.keys(stats.os_distribution);
+    const osData = Object.values(stats.os_distribution);
+
+    // Create OS distribution chart
+    new Chart(document.getElementById('osChart'), {
+        type: 'bar',
+        data: {
+            labels: osLabels,
+            datasets: [{
+                label: 'Operating System Distribution',
+                data: osData,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false // Disable the legend
+                }
+            }
+        }
+    });
+
+    // Prepare data for the region distribution chart
+    const regionLabels = Object.keys(stats.region_distribution);
+    const regionData = Object.values(stats.region_distribution);
+
+    // Create region distribution chart
+    new Chart(document.getElementById('regionChart'), {
+        type: 'bar',
+        data: {
+            labels: regionLabels,
+            datasets: [{
+                label: 'Region Distribution',
+                data: regionData,
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false // Disable the legend
+                }
+            }
+        }
+    });
+}
+
+// Call the function to fetch stats when the page loads
+window.onload = fetchStats;
+
     </script>
 </body>
 </html>
