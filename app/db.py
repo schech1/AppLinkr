@@ -1,7 +1,8 @@
 import sqlite3
 from flask import g
-import os
 from db import delete_qr_code_by_id
+from db import DATABASE_PATH
+
 
 
 DATABASE_FOLDER = "db"

@@ -1,6 +1,6 @@
 import validators
 from db import get_db
-from user_tracking import detect_device, get_client_ip, get_location, detect_browser_and_os
+from app.metrics import detect_device, get_client_ip, get_location, detect_browser_and_os
 from flask import request
 
 

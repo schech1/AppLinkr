@@ -7,7 +7,7 @@ from db import get_db
 from db import DATABASE_PATH
 from db import delete_qr_code_by_id
 from utils import is_valid_url, process_metrics
-from user_tracking import detect_browser_and_os, get_client_ip, get_location, detect_device
+from app.metrics import  get_client_ip
 import os
 
 
