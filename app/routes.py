@@ -118,10 +118,9 @@ def setup_routes(app, SERVER_URL, PASSWORD):
         play_store_url = request.args.get('play_store_url')
         qr_code_id = request.args.get('qr_code_id')  
         
-        user_agent = request.headers.get('User-Agent')
-        ip_address = get_client_ip()
+        user_agent = request.headers.get('User-Agent')       
 
-        device = process_metrics(qr_code_id, user_agent, ip_address)
+        device = process_metrics(qr_code_id, user_agent)
 
         if device == "android" and play_store_url:
             return redirect(play_store_url)
