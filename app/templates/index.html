@@ -170,6 +170,7 @@
     <!-- Navigation bar -->
     <nav>
         <div class="menu-icon" onclick="toggleMenu()">☰</div>
+        <h1>AppLinkr</h1>
         <div class="menu">
             <a href="{{ url_for('index') }}">QR Generator</a>
             <a href="{{ url_for('admin') }}">Admin</a>
@@ -187,8 +188,6 @@
     </ul>
     {% endif %}
     {% endwith %}
-
-    <h1>AppLinkr - QR Codes for AppStores</h1>
 
     <!-- Tab Container -->
     <div class="tab-container">
