@@ -192,7 +192,7 @@ def setup_routes(app, SERVER_URL, PASSWORD):
             tracking_data[code[0]] = db.execute('SELECT * FROM qr_code_tracking WHERE qr_code_id = ?', (code[0],)).fetchall()
 
         qr_codes_with_url = [
-            (code, f"{SERVER_URL}/redirect/{code[0]}", tracking_data[code[0]])
+            (code, f"{SERVER_URL}/show/{code[0]}", tracking_data[code[0]])
             for code in qr_codes
         ]
 
