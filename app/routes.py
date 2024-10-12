@@ -51,9 +51,11 @@ def setup_routes(app, SERVER_URL, PASSWORD):
                            (qr_code_id, title, content, "", ""))  # App Store URLs are empty for standard QR codes
         else:  # If the App Store and Play Store URLs are provided
             if not (is_valid_url(app_store_url) and is_valid_url(play_store_url)):
-                return "Invalid URLs for App Store or Play Store", 400
+                flash('Invalid URLs for App Store or Play Store.', 'danger')
+                #return "Invalid URLs for App Store or Play Store", 400
 
-            qr_url = f"{SERVER_URL}/redirect?app_store_url={app_store_url}&play_store_url={play_store_url}&qr_code_id={qr_code_id}"
+            qr_url = f"{SERVER_URL}/redirect/{qr_code_id}"
+
             cursor.execute('INSERT INTO qr_codes (id, title, content, app_store_url, play_store_url) VALUES (?, ?, ?, ?, ?)', 
                            (qr_code_id, title, "", app_store_url, play_store_url))
 
@@ -112,23 +114,32 @@ def setup_routes(app, SERVER_URL, PASSWORD):
         buf = io.BytesIO(qr_code_data[0])
         return send_file(buf, mimetype='image/png')
 
-    @app.route('/redirect')
-    def redirect_to_store():
+    @app.route('/redirect/<qr_code_id>')
+    def redirect_to_store(qr_code_id):
         """Redirect the user to the appropriate store based on their device."""
-        app_store_url = request.args.get('app_store_url')
-        play_store_url = request.args.get('play_store_url')
-        qr_code_id = request.args.get('qr_code_id')  
+        db = get_db()
         
-        user_agent = request.headers.get('User-Agent')       
+        # Fetch the app store and play store URLs from the database
+        qr_code_data = db.execute('SELECT app_store_url, play_store_url FROM qr_codes WHERE id = ?', (qr_code_id,)).fetchone()
 
+        if not qr_code_data:
+            return "QR Code not found", 404
+
+        app_store_url, play_store_url = qr_code_data
+
+        # Get user agent and determine device type
+        user_agent = request.headers.get('User-Agent')
         device = process_metrics(qr_code_id, user_agent)
 
+        # Redirect based on device type
         if device == "android" and play_store_url:
             return redirect(play_store_url)
         elif device == "ios" and app_store_url:
             return redirect(app_store_url)
         else:
             return "Device not recognized or no URL provided", 400
+
+
 
     @app.template_filter('b64encode')
     def b64encode_filter(data):
@@ -171,9 +182,10 @@ def setup_routes(app, SERVER_URL, PASSWORD):
             tracking_data[code[0]] = db.execute('SELECT * FROM qr_code_tracking WHERE qr_code_id = ?', (code[0],)).fetchall()
 
         qr_codes_with_url = [
-            (code, f"{SERVER_URL}/show/{code[0]}", tracking_data[code[0]])
+            (code, f"{SERVER_URL}/redirect/{code[0]}", tracking_data[code[0]])
             for code in qr_codes
         ]
+
 
         return render_template('admin.html', qr_codes=qr_codes_with_url)
 
