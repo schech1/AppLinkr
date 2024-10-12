@@ -42,34 +42,43 @@
         <a href="{{ url_for('logout') }}" style="text-decoration: none; color: #007bff;">Logout</a>
         <h2>Statistics</h2>
         {% for code, qr_code_url, records in qr_codes %}
-            <div class="card">
-                <div class="card-title">{{ code[1] }}</div> <!-- Title -->
-                <div class="card-content">
-                    <strong>ID:</strong> {{ code[0] }}<br>                    
-                    <strong>QR Code:</strong><br>
-                    <a href="{{ qr_code_url }}" target="_blank">
-                        <img src="{{ qr_code_url }}" alt="QR Code">
-                    </a>
-                    <div class="url">
-                        <strong>Direct Redirect:</strong> <a href="{{ code[2] }}" target="_blank">{{ code[2] }}</a><br>
-                        <strong>App Store URL:</strong> <a href="{{ code[3] }}" target="_blank">{{ code[3] }}</a><br>
-                        <strong>Play Store URL:</strong> <a href="{{ code[4] }}" target="_blank">{{ code[4] }}</a>
-                    </div>
-                    <div>
-                        <strong>Tracking Info:</strong>
-                        <ul>
-                            <strong>Scans:</strong> {{ records|length }}<br>
-                            {% for record in records %}
-                                <li>{{ record[2] }} | Region: {{ record[5] }} | Browser: {{ record[6] }} | OS: {{ record[7] }} | Language: {{ record[8] }} | Referrer: {{ record[9] }}</li>
-                            {% endfor %}
-                        </ul>
+        <div class="card">
+            <div class="card-title">{{ code[1] }}</div> <!-- Title -->
+            <div class="card-content">
+                <strong>ID:</strong> {{ code[0] }}<br>
+                <strong>QR Code:</strong><br>
+                
+                <!-- Display QR code -->
+                <div class="qr-container">
+                    <h2>Your QR Code:</h2>
+                    <img src="{{ qr_code_url }}" alt="QR Code">
+                    <div class="qr-url">
+                        <span id="qrUrlText-{{ code[0] }}">{{ qr_code_url }}</span>
+                        <button class="copy-button" onclick="copyToClipboard('{{ code[0] }}')">Copy to Clipboard</button>
                     </div>
                 </div>
-                <div class="actions">
-                    <button type="button" class="delete-button" onclick="confirmDelete('{{ code[0] }}')">Delete</button>
+                
+                <div class="url">
+                    <strong>Direct Redirect:</strong> <a href="{{ code[2] }}" target="_blank">{{ code[2] }}</a><br>
+                    <strong>App Store URL:</strong> <a href="{{ code[3] }}" target="_blank">{{ code[3] }}</a><br>
+                    <strong>Play Store URL:</strong> <a href="{{ code[4] }}" target="_blank">{{ code[4] }}</a>
+                </div>
+                <div>
+                    <strong>Tracking Info:</strong>
+                    <ul>
+                        <strong>Scans:</strong> {{ records|length }}<br>
+                        {% for record in records %}
+                            <li>{{ record[2] }} | Region: {{ record[5] }} | Browser: {{ record[6] }} | OS: {{ record[7] }} | Language: {{ record[8] }} | Referrer: {{ record[9] }}</li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
-        {% endfor %}
+            <div class="actions">
+                <button type="button" class="delete-button" onclick="confirmDelete('{{ code[0] }}')">Delete</button>
+            </div>
+        </div>
+    {% endfor %}
+    
         <form action="/download_db" method="get" style="margin-top: 20px;">
             <input type="submit" value="Download Database Backup" class="delete-button">
         </form>
