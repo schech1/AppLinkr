@@ -35,6 +35,22 @@ def setup_routes(app, SERVER_URL, PASSWORD):
         play_store_url = request.form.get('play_store_url')
         content = request.form.get('content')
 
+        # Check if either content or app store URLs are provided
+        if not content and not (app_store_url and play_store_url):
+            flash('You must provide either a standard URL or both App Store and Play Store URLs.', 'danger')
+            return render_template('index.html')
+
+        # Check for invalid URL in the standard content
+        if content and not is_valid_url(content):
+            flash('Invalid URL provided for standard QR.', 'danger')
+            return render_template('index.html')
+
+        # Check for invalid URLs in the app store fields
+        if not content:
+            if not (is_valid_url(app_store_url) and is_valid_url(play_store_url)):
+                flash('Invalid URLs for App Store or Play Store.', 'danger')
+                return render_template('index.html')
+
         # Create a database connection and cursor
         db = get_db()
         cursor = db.cursor()
@@ -42,22 +58,15 @@ def setup_routes(app, SERVER_URL, PASSWORD):
         # Generate a new UUID for the QR code
         qr_code_id = str(uuid.uuid4())
 
-        if content:  # If content for standard QR code is provided
-            if not is_valid_url(content):  # Validate the URL
-                return "Invalid URL provided for standard QR", 400
-
+        # Generate the appropriate QR code URL
+        if content:  # If content for a standard QR code is provided
             qr_url = f"{SERVER_URL}/redirect_standard?qr_code_id={qr_code_id}"  # Redirect for standard QR
-            cursor.execute('INSERT INTO qr_codes (id, title, content, app_store_url, play_store_url) VALUES (?, ?, ?, ?, ?)', 
-                           (qr_code_id, title, content, "", ""))  # App Store URLs are empty for standard QR codes
-        else:  # If the App Store and Play Store URLs are provided
-            if not (is_valid_url(app_store_url) and is_valid_url(play_store_url)):
-                flash('Invalid URLs for App Store or Play Store.', 'danger')
-                #return "Invalid URLs for App Store or Play Store", 400
-
+            cursor.execute('INSERT INTO qr_codes (id, title, content, app_store_url, play_store_url) VALUES (?, ?, ?, ?, ?)',
+                        (qr_code_id, title, content, "", ""))  # App Store URLs are empty for standard QR codes
+        else:  # For app store links
             qr_url = f"{SERVER_URL}/redirect/{qr_code_id}"
-
-            cursor.execute('INSERT INTO qr_codes (id, title, content, app_store_url, play_store_url) VALUES (?, ?, ?, ?, ?)', 
-                           (qr_code_id, title, "", app_store_url, play_store_url))
+            cursor.execute('INSERT INTO qr_codes (id, title, content, app_store_url, play_store_url) VALUES (?, ?, ?, ?, ?)',
+                        (qr_code_id, title, "", app_store_url, play_store_url))
 
         db.commit()
 
@@ -81,6 +90,7 @@ def setup_routes(app, SERVER_URL, PASSWORD):
         cursor.execute('UPDATE qr_codes SET qr_image = ? WHERE id = ?', (img_buf.getvalue(), qr_code_id))
         db.commit()
 
+        # Generate QR code URL to show in the template
         qr_code_url = f"{SERVER_URL}{url_for('show', code_id=qr_code_id)}"
 
         return render_template('index.html', qr_code_url=qr_code_url)
