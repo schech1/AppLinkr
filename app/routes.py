@@ -14,8 +14,20 @@ import os
 
 def setup_routes(app, SERVER_URL, PASSWORD):
 
-    @app.route('/')
+    @app.route('/', methods=['GET', 'POST'])
     def index():
+
+        if request.method == 'POST':
+            password = request.form.get('password')
+            if password == PASSWORD:
+                session['authenticated'] = True
+                return redirect(url_for('index'))
+            else:
+                return "Invalid password", 403
+
+        if 'authenticated' not in session:
+            return render_template('index.html') 
+                
         """Display the form for entering the App Store and Play Store URLs."""
         db = get_db()
         qr_codes = db.execute('SELECT * FROM qr_codes').fetchall()
