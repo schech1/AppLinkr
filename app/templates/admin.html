@@ -17,6 +17,9 @@
         <div class="menu">
             <a href="{{ url_for('index') }}">QR Generator</a>
             <a href="{{ url_for('admin') }}">Admin</a>
+            {% if session.get('authenticated') %}
+            <a href="{{ url_for('logout') }}" style="text-decoration: none; color: #007bff;">Logout</a>
+
         </div>      
     </nav>
 
@@ -39,7 +42,7 @@
             <input type="submit" value="Login">
         </form>
     {% else %}
-        <a href="{{ url_for('logout') }}" style="text-decoration: none; color: #007bff;">Logout</a>
+        
         <h2>Statistics</h2>
         {% for code, qr_code_url, records in qr_codes %}
             <div class="card">
