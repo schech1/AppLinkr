@@ -16,6 +16,9 @@
         <div class="menu">
             <a href="{{ url_for('index') }}">QR Generator</a>
             <a href="{{ url_for('admin') }}">Admin</a>
+            {% if session.get('authenticated') %}
+            <a href="{{ url_for('logout') }}">Logout</a>
+            {% endif %}
         </div>      
     </nav>
 

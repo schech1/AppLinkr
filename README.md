@@ -5,6 +5,7 @@ AppLinkr is a simple yet powerful web application that generates a QR code and f
 ![Generate QR Code](images/generate.png)
 ![Admin Panel](images/admin.png)
 
+
 ## Features
 
 - **QR Code Generation**: Generate a unique QR code for your app with a simple interface.
@@ -49,4 +50,6 @@ This project is licensed under the MIT License. See the LICENSE file for more de
 
 ## Contributing
 
-Contributions are welcome! If you would like to contribute to AppLinkr, please fork the repository and submit a pull request.
+### Help Wanted
+I'm looking for someone with UI/UX-Experience to improve the design of the app. 
+If you are interested to contribute, let me know.
