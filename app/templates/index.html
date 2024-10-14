@@ -30,6 +30,14 @@
     {% endif %}
     {% endwith %}
 
+    {% if not session.get('authenticated') %}
+    <h2>Login</h2>
+    <form method="post" action="{{ url_for('index') }}">
+        <input type="password" name="password" placeholder="Enter Password" required>
+        <input type="submit" value="Login">
+    </form>
+    {% else %}
+
     <!-- Tab Container -->
     <div class="tab-container">
         <div class="tab-buttons">
@@ -77,7 +85,7 @@
     </div>
 </div>
     {% endif %}
-    
+    {% endif %}
     <script>
 
         function toggleMenu() {
