@@ -9,6 +9,8 @@ AppLinkr is a simple yet powerful web application that generates a QR code and f
 
 Test out **AppLinkr** at [https://demo.applinkr.one](https://demo.applinkr.one)
 
+Admin password: `applinkr-demo` 
+
 ## Features
 
 - **QR Code Generation**: Generate a unique QR code for your app with a simple interface.
