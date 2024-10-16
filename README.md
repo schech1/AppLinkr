@@ -17,6 +17,14 @@ Admin password: `applinkr-demo`
 - **Admin Panel**: View statistics, manage QR codes, and download the database backup.
 
 
+## Roadmap
+
+- Enhance stats with graphs
+- Improve UI design
+- Individualize QR-codes with frames and embedded images 
+
+**Hint:** *If you are interested in contributing to AppLinkr, feel free to do so. It would help me a lot.*
+
 ## Installation (via docker-compose)
 
 ```yaml
