@@ -17,7 +17,7 @@ Admin password: `applinkr-demo`
 - **Admin Panel**: View statistics, manage QR codes, and download the database backup.
 
 
-## Installation
+## Installation (via docker-compose)
 
 ```yaml
 version: '3.8'
