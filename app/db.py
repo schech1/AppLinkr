@@ -1,25 +1,9 @@
 import sqlite3
 from flask import g
-from apscheduler.schedulers.background import BackgroundScheduler
-import os
 
-# Database location
+
 DATABASE_FOLDER = "db"
 DATABASE_PATH = f"{DATABASE_FOLDER}/database.db"
-
-def delete_database():
-    """Delete the SQLite database file if it exists."""
-    if os.path.exists(DATABASE_PATH):
-        os.remove(DATABASE_PATH)
-        print("Database deleted successfully.")
-    else:
-        print("Database does not exist.")
-
-def start_scheduler():
-    """Start the background scheduler to delete the database daily."""
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(delete_database, 'interval', days=1)  # Schedule to run daily
-    scheduler.start()
 
 def get_db():
     """Get a database connection."""
@@ -30,7 +14,7 @@ def get_db():
         g.db.execute('''CREATE TABLE IF NOT EXISTS qr_codes
                         (id TEXT PRIMARY KEY,
                          title TEXT NOT NULL,
-                         content TEXT,
+                         content TEXT,                     
                          app_store_url TEXT NOT NULL,
                          play_store_url TEXT NOT NULL,
                          qr_image BLOB)''')
