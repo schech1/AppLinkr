@@ -8,6 +8,7 @@ Test out **AppLinkr** at [https://demo.applinkr.one](https://demo.applinkr.one)
 
 Admin password: `applinkr-demo` 
 
+The database will reset every 24 hours.
 
 ## Features
 
