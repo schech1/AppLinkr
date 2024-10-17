@@ -1,13 +1,12 @@
 from flask import Flask
 import os
-from db import close_db
+from db import close_db, start_scheduler  # Import the scheduler
 from routes import setup_routes
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 # Database setup
-# Define the default database location inside the 'db' folder
 DATABASE_FOLDER = "db"
 DATABASE_PATH = f"{DATABASE_FOLDER}/database.db"
 
@@ -26,6 +25,9 @@ def teardown(exception):
 
 # Set up routes
 setup_routes(app, SERVER_URL, PASSWORD)
+
+# Start the scheduler to delete the database daily
+start_scheduler()
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
