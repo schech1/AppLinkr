@@ -1,6 +1,6 @@
 # AppLinkr
 
-AppLinkr is a simple yet powerful web application that generates a QR code and forwards users to the appropriate App Store or Google Play Store based on their device type. With AppLinkr, you can easily share your mobile application links and track user interactions.
+AppLinkr is a simple web application that generates a QR code and forwards users to the appropriate App Store or Google Play Store based on their device type. With AppLinkr, you can easily share your mobile application links and track user interactions.
 
 ## Demo
 
