@@ -739,7 +739,7 @@
                 const ctx = document.getElementById(`chart-${qrId}`);
                 if (ctx) { // Make sure the canvas exists
                     const myChart = new Chart(ctx, {
-                        type: 'bar',
+                        type: 'line',
                         data: {
                             labels: dates,
                             datasets: [{
