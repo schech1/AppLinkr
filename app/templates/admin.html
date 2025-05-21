@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AppLinkr - QR Code Analytics</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         :root {
             --primary: #4361ee;
@@ -664,8 +664,22 @@
         // Process data and create charts for each QR code
         {% for code, qr_code_url, records in qr_codes %}
         (function() {
-            const records = {{ records|tojson }};
-            const qrId = '{{ code[0] }}';
+            // Get QR code ID
+            const qrId = "{{ code[0] }}";
+            
+            // Process records for this QR code
+            const records = [
+                {% for record in records %}
+                {
+                    date: "{{ record[2] }}",
+                    region: "{{ record[5] }}",
+                    browser: "{{ record[6] }}",
+                    os: "{{ record[7] }}",
+                    language: "{{ record[8] }}",
+                    referrer: "{{ record[9] }}"
+                }{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
             
             // Process data for charts
             const scanDates = {}; // For timeline chart
@@ -677,33 +691,38 @@
             // Process each record
             records.forEach(record => {
                 // Extract date (without time)
-                const dateOnly = record[2].split(' ')[0];
+                const dateOnly = record.date.split(' ')[0];
                 
                 // Count scans per date
                 scanDates[dateOnly] = (scanDates[dateOnly] || 0) + 1;
                 
                 // Count browsers
-                const browser = record[6] || 'Unknown';
+                const browser = record.browser || 'Unknown';
                 browsers[browser] = (browsers[browser] || 0) + 1;
                 
                 // Count OS
-                const os = record[7] || 'Unknown';
+                const os = record.os || 'Unknown';
                 osTypes[os] = (osTypes[os] || 0) + 1;
                 
                 // Count regions
-                const region = record[5] || 'Unknown';
+                const region = record.region || 'Unknown';
                 regions[region] = (regions[region] || 0) + 1;
                 
                 // Count languages
-                const language = record[8] || 'Unknown';
+                const language = record.language || 'Unknown';
                 languages[language] = (languages[language] || 0) + 1;
             });
             
-            // Find top items
-            const topBrowser = Object.keys(browsers).reduce((a, b) => browsers[a] > browsers[b] ? a : b, 'None');
-            const topOS = Object.keys(osTypes).reduce((a, b) => osTypes[a] > osTypes[b] ? a : b, 'None');
-            const topRegion = Object.keys(regions).reduce((a, b) => regions[a] > regions[b] ? a : b, 'None');
-            const topLanguage = Object.keys(languages).reduce((a, b) => languages[a] > languages[b] ? a : b, 'None');
+            // Find top items (handle empty objects case)
+            const getTopItem = (obj) => {
+                if (Object.keys(obj).length === 0) return 'None';
+                return Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b, 'None');
+            };
+            
+            const topBrowser = getTopItem(browsers);
+            const topOS = getTopItem(osTypes);
+            const topRegion = getTopItem(regions);
+            const topLanguage = getTopItem(languages);
             
             // Update stat boxes
             document.getElementById(`top-browser-${qrId}`).textContent = topBrowser;
@@ -715,42 +734,54 @@
             const dates = Object.keys(scanDates).sort();
             const scanCounts = dates.map(date => scanDates[date]);
             
-            // Create chart
-            const ctx = document.getElementById(`chart-${qrId}`).getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'Scans',
-                        data: scanCounts,
-                        backgroundColor: 'rgba(67, 97, 238, 0.2)',
-                        borderColor: 'rgba(67, 97, 238, 1)',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        pointBackgroundColor: 'rgba(67, 97, 238, 1)',
-                        pointRadius: 4,
-                        pointHoverRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
+            // Create chart (only if we have data)
+            if (dates.length > 0) {
+                const ctx = document.getElementById(`chart-${qrId}`);
+                if (ctx) { // Make sure the canvas exists
+                    const myChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: dates,
+                            datasets: [{
+                                label: 'Scans',
+                                data: scanCounts,
+                                backgroundColor: 'rgba(67, 97, 238, 0.2)',
+                                borderColor: 'rgba(67, 97, 238, 1)',
+                                borderWidth: 2,
+                                tension: 0.4,
+                                pointBackgroundColor: 'rgba(67, 97, 238, 1)',
+                                pointRadius: 4,
+                                pointHoverRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
                             }
                         }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
+                    });
+                } else {
+                    console.error(`Canvas element chart-${qrId} not found`);
                 }
-            });
+            } else {
+                // If no data, display a message in the chart container
+                const container = document.querySelector(`#chart-${qrId}`).parentNode;
+                if (container) {
+                    container.innerHTML = '<div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-light);">No scan data available</div>';
+                }
+            }
         })();
         {% endfor %}
         
