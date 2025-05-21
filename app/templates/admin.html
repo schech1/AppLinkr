@@ -638,29 +638,28 @@
     </div>
 
     <script>
-        // Define global functions first
+        // Toggle mobile menu
         function toggleMenu() {
             const menu = document.querySelector('.menu');
             menu.classList.toggle('active');
         }
 
+        // Toggle scan list visibility
         function toggleScanList(id) {
             const scanList = document.getElementById(id);
-            if (scanList.style.display === 'none' || scanList.style.display === '') {
+            if (scanList.style.display === 'none') {
                 scanList.style.display = 'block';
             } else {
                 scanList.style.display = 'none';
             }
         }
 
+        // Confirm deletion
         function confirmDelete(qrCodeId) {
-            if (confirm('Are you sure you want to delete this QR code? This action cannot be undone.')) {
+            if (confirm('Are you sure you want to delete this QR code?')) {
                 window.location.href = '/delete/' + qrCodeId;
             }
         }
-
-        // Wait for DOM to be ready
-        document.addEventListener('DOMContentLoaded', function() {
 
         // Process data and create charts for each QR code
         {% for code, qr_code_url, records in qr_codes %}
@@ -740,7 +739,7 @@
                 const ctx = document.getElementById(`chart-${qrId}`);
                 if (ctx) { // Make sure the canvas exists
                     const myChart = new Chart(ctx, {
-                        type: 'line',
+                        type: 'bar',
                         data: {
                             labels: dates,
                             datasets: [{
@@ -783,7 +782,7 @@
                     container.innerHTML = '<div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-light);">No scan data available</div>';
                 }
             }
-        });
+        })();
         {% endfor %}
         
         // Calculate overall statistics
@@ -815,8 +814,7 @@
             
             // Set most popular QR
             document.querySelector('[data-popular-qr]').textContent = popularQRName;
-        });
-    </script>
+        })();
     </script>
 </body>
 </html>
