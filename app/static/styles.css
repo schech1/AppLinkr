@@ -52,7 +52,6 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: var(--blue);
     padding: 20px 0;
     border-bottom: 1px solid var(--border);
     margin-bottom: 30px;
@@ -221,7 +220,7 @@ nav a:hover {
 /* QR Code Grid */
 .qr-code-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 24px;
     margin-bottom: 40px;
 }
@@ -294,6 +293,17 @@ nav a:hover {
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid var(--border);
+}
+
+/* No access times message */
+.no-access-times {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-light);
+    font-style: italic;
+    background-color: var(--background);
+    border-radius: 8px;
+    margin: 20px 0;
 }
 
 .stats-header {

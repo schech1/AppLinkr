@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="static/styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <title>AppLinkr - QR Code Analytics</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    
 </head>
 <body>
     <div class="wrapper">
@@ -40,7 +39,7 @@
                 <h2>Admin Login</h2>
             </div>
             <div class="login-body">
-                <form method="post" action="{{ url_for('index') }}" class="login-form">
+                <form method="post" action="{{ url_for('admin') }}" class="login-form">
                     <input type="password" name="password" placeholder="Enter Password" required>
                     <input type="submit" value="Login">
                 </form>
@@ -65,21 +64,24 @@
             </div>
             <div class="stat-card">
                 <h3>Total Scans</h3>
-                <p id="total-scans" data-total-scans>0</p>
+                <p id="total-scans">0</p>
             </div>
             <div class="stat-card">
                 <h3>Average Scans</h3>
-                <p id="avg-scans" data-avg-scans>0</p>
+                <p id="avg-scans">0</p>
             </div>
             <div class="stat-card">
                 <h3>Most Popular QR</h3>
-                <p id="popular-qr" data-popular-qr>-</p>
+                <p id="popular-qr">-</p>
             </div>
         </div>
 
         <!-- QR Codes Grid -->
         <div class="qr-code-grid">
-            {% for code, qr_code_url, records in qr_codes %}
+            {% for code_data in qr_codes %}
+            {% set code = code_data[0] %}
+            {% set qr_code_url = code_data[1] %}
+            {% set records = code_data[2] %}
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">{{ code[1] }}</div>
@@ -93,103 +95,84 @@
                             </a>
                         </div>
                         <div class="url-info">
-                            <div><strong>ID:</strong> {{ code[0] }}</div>
+                            <div><strong>ID:</strong> {{ code[0][:8] }}...</div>
+                            {% if code[2] %}
                             <div>
-                                <strong>Direct Redirect:</strong>
-                                <a href="{{ code[2] }}" target="_blank" title="{{ code[2] }}">{{ code[2]|truncate(30) }}</a>
+                                <strong>Direct URL:</strong>
+                                <a href="{{ code[2] }}" target="_blank" title="{{ code[2] }}">{{ code[2][:40] }}{% if code[2]|length > 40 %}...{% endif %}</a>
                             </div>
+                            {% endif %}
+                            {% if code[3] %}
                             <div>
                                 <strong>App Store:</strong>
-                                <a href="{{ code[3] }}" target="_blank" title="{{ code[3] }}">{{ code[3]|truncate(30) }}</a>
+                                <a href="{{ code[3] }}" target="_blank" title="{{ code[3] }}">{{ code[3][:40] }}{% if code[3]|length > 40 %}...{% endif %}</a>
                             </div>
+                            {% endif %}
+                            {% if code[4] %}
                             <div>
                                 <strong>Play Store:</strong>
-                                <a href="{{ code[4] }}" target="_blank" title="{{ code[4] }}">{{ code[4]|truncate(30) }}</a>
+                                <a href="{{ code[4] }}" target="_blank" title="{{ code[4] }}">{{ code[4][:40] }}{% if code[4]|length > 40 %}...{% endif %}</a>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
 
+                    {% if records %}
                     <div class="card-stats">
                         <div class="stats-header">
-                            <h3>Performance Analytics</h3>
-                            <div class="view-all" onclick="toggleScanList('scanList-{{ code[0] }}')">View all scans</div>
+                            <h3>Analytics Overview</h3>
+                            <div class="view-all" onclick="toggleDetails('details-{{ code[0] }}')">View Details</div>
                         </div>
                         
-                        <!-- Charts -->
-                        <div class="chart-container">
-                            <canvas id="chart-{{ code[0] }}"></canvas>
-                        </div>
-                        
-                        <!-- Statistics Grid -->
+                        <!-- Key Metrics -->
                         <div class="stats-grid">
                             <div class="stat-box">
-                                <h4>Top Browser</h4>
-                                <p id="top-browser-{{ code[0] }}">-</p>
-                            </div>
-                            <div class="stat-box">
-                                <h4>Top OS</h4>
-                                <p id="top-os-{{ code[0] }}">-</p>
+                                <h4>Top Platform</h4>
+                                <p id="top-platform-{{ code[0] }}">-</p>
                             </div>
                             <div class="stat-box">
                                 <h4>Top Region</h4>
                                 <p id="top-region-{{ code[0] }}">-</p>
                             </div>
                             <div class="stat-box">
-                                <h4>Top Language</h4>
-                                <p id="top-language-{{ code[0] }}">-</p>
+                                <h4>Latest Scan</h4>
+                                <p id="latest-scan-{{ code[0] }}">-</p>
+                            </div>
+                            <div class="stat-box">
+                                <h4>Total Scans</h4>
+                                <p>{{ records|length }}</p>
                             </div>
                         </div>
 
-                        <!-- Access Times Section -->
-                        <div class="access-times-section">
-                            <div class="access-times-header">
-                                <h3>Recent Access Times</h3>
-                                <button class="access-times-toggle" onclick="toggleAccessTimes('accessTimes-{{ code[0] }}')">
-                                    Show times
-                                </button>
-                            </div>
-                            <div id="accessTimes-{{ code[0] }}" class="access-times-list" style="display: none;">
-                                {% if records %}
-                                    {% for record in records|reverse %}
-                                    <div class="access-time-item">
-                                        <div class="access-time-main">
-                                            <div class="access-time-date">{{ record[4] if record[4] else record[2] }}</div>
-                                            <div class="access-time-details">
-                                                <span class="access-time-device">{{ record[1] }}</span>
-                                                <span class="access-time-detail">{{ record[5] }}</span>
-                                                <span class="access-time-detail">{{ record[6] }}</span>
-                                                <span class="access-time-detail">{{ record[7] }}</span>
-                                                {% if record[9] and record[9] != 'Direct Access' %}
-                                                <span class="access-time-detail">Ref: {{ record[9][:20] }}{% if record[9]|length > 20 %}...{% endif %}</span>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {% endfor %}
-                                {% else %}
-                                    <div class="no-access-times">No access times recorded yet</div>
-                                {% endif %}
-                            </div>
+                        <!-- Charts Container -->
+                        <div class="chart-container">
+                            <canvas id="chart-{{ code[0] }}"></canvas>
                         </div>
-                        
-                        <!-- Scan List (hidden by default) -->
-                        <div id="scanList-{{ code[0] }}" class="scan-list" style="display: none;">
-                            {% for record in records %}
-                            <div class="scan-item">
-                                <span class="scan-date">{{ record[4] if record[4] else record[2] }}</span>
-                                <div class="scan-details">
-                                    <span class="scan-detail">{{ record[5] }}</span>
-                                    <span class="scan-detail">{{ record[6] }}</span>
-                                    <span class="scan-detail">{{ record[7] }}</span>
-                                    <span class="scan-detail">{{ record[8] }}</span>
-                                    {% if record[9] %}
-                                    <span class="scan-detail">Ref: {{ record[9] }}</span>
-                                    {% endif %}
+
+                        <!-- Detailed View (hidden by default) -->
+                        <div id="details-{{ code[0] }}" class="access-times-list" style="display: none;">
+                            {% for record in records|reverse %}
+                            <div class="access-time-item">
+                                <div class="access-time-main">
+                                    <div class="access-time-date">{{ record[4] if record[4] else record[2] }}</div>
+                                    <div class="access-time-details">
+                                        <span class="access-time-device">{{ record[1]|upper }}</span>
+                                        <span class="access-time-detail">{{ record[5] if record[5] else 'Unknown Region' }}</span>
+                                        <span class="access-time-detail">{{ record[3] }}</span>
+                                        {% if record[9] and record[9] != 'Direct Access' %}
+                                        <span class="access-time-detail">{{ record[9][:30] }}{% if record[9]|length > 30 %}...{% endif %}</span>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
                     </div>
+                    {% else %}
+                    <div class="no-access-times">
+                        No scans recorded yet
+                    </div>
+                    {% endif %}
                 </div>
                 <div class="actions">
                     <button type="button" class="btn btn-danger" onclick="confirmDelete('{{ code[0] }}')">Delete</button>
@@ -207,27 +190,17 @@
             menu.classList.toggle('active');
         }
 
-        // Toggle scan list visibility
-        function toggleScanList(id) {
-            const scanList = document.getElementById(id);
-            if (scanList.style.display === 'none') {
-                scanList.style.display = 'block';
-            } else {
-                scanList.style.display = 'none';
-            }
-        }
-
-        // Toggle access times visibility
-        function toggleAccessTimes(id) {
-            const accessTimesList = document.getElementById(id);
-            const button = document.querySelector(`[onclick="toggleAccessTimes('${id}')"]`);
+        // Toggle details visibility
+        function toggleDetails(id) {
+            const detailsList = document.getElementById(id);
+            const button = document.querySelector(`[onclick="toggleDetails('${id}')"]`);
             
-            if (accessTimesList.style.display === 'none') {
-                accessTimesList.style.display = 'block';
-                button.textContent = 'Hide times';
+            if (detailsList.style.display === 'none') {
+                detailsList.style.display = 'block';
+                button.textContent = 'Hide Details';
             } else {
-                accessTimesList.style.display = 'none';
-                button.textContent = 'Show times';
+                detailsList.style.display = 'none';
+                button.textContent = 'View Details';
             }
         }
 
@@ -239,9 +212,10 @@
         }
 
         // Process data and create charts for each QR code
-        {% for code, qr_code_url, records in qr_codes %}
+        {% for code_data in qr_codes %}
+        {% set code = code_data[0] %}
+        {% set records = code_data[2] %}
         (function() {
-            // Get QR code ID
             const qrId = "{{ code[0] }}";
             
             // Process records for this QR code
@@ -249,76 +223,73 @@
                 {% for record in records %}
                 {
                     date: "{{ record[4] if record[4] else record[2] }}",
-                    region: "{{ record[5] }}",
-                    browser: "{{ record[6] }}",
-                    os: "{{ record[7] }}",
-                    language: "{{ record[8] }}",
-                    referrer: "{{ record[9] }}"
+                    device: "{{ record[1] }}",
+                    ip: "{{ record[3] }}",
+                    region: "{{ record[5] if record[5] else 'Unknown' }}"
                 }{% if not loop.last %},{% endif %}
                 {% endfor %}
             ];
             
-            // Process data for charts
-            const scanDates = {}; // For timeline chart
-            const browsers = {}; // For browser counts
-            const osTypes = {}; // For OS counts
-            const regions = {}; // For region counts
-            const languages = {}; // For language counts
+            // Process data
+            const scanDates = {};
+            const platforms = {};
+            const regions = {};
+            let latestScan = null;
             
-            // Process each record
             records.forEach(record => {
-                // Extract date (without time)
+                // Date processing
                 const dateOnly = record.date.split(' ')[0];
-                
-                // Count scans per date
                 scanDates[dateOnly] = (scanDates[dateOnly] || 0) + 1;
                 
-                // Count browsers
-                const browser = record.browser || 'Unknown';
-                browsers[browser] = (browsers[browser] || 0) + 1;
+                // Platform counting
+                const platform = record.device || 'Unknown';
+                platforms[platform] = (platforms[platform] || 0) + 1;
                 
-                // Count OS
-                const os = record.os || 'Unknown';
-                osTypes[os] = (osTypes[os] || 0) + 1;
-                
-                // Count regions
+                // Region counting
                 const region = record.region || 'Unknown';
                 regions[region] = (regions[region] || 0) + 1;
                 
-                // Count languages
-                const language = record.language || 'Unknown';
-                languages[language] = (languages[language] || 0) + 1;
+                // Latest scan
+                if (!latestScan || record.date > latestScan) {
+                    latestScan = record.date;
+                }
             });
             
-            // Find top items (handle empty objects case)
+            // Find top items
             const getTopItem = (obj) => {
                 if (Object.keys(obj).length === 0) return 'None';
-                return Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b, 'None');
+                return Object.keys(obj).reduce((a, b) => obj[a] > obj[b] ? a : b);
             };
             
-            const topBrowser = getTopItem(browsers);
-            const topOS = getTopItem(osTypes);
+            const topPlatform = getTopItem(platforms);
             const topRegion = getTopItem(regions);
-            const topLanguage = getTopItem(languages);
             
             // Update stat boxes
-            document.getElementById(`top-browser-${qrId}`).textContent = topBrowser;
-            document.getElementById(`top-os-${qrId}`).textContent = topOS;
-            document.getElementById(`top-region-${qrId}`).textContent = topRegion;
-            document.getElementById(`top-language-${qrId}`).textContent = topLanguage;
+            const topPlatformEl = document.getElementById(`top-platform-${qrId}`);
+            const topRegionEl = document.getElementById(`top-region-${qrId}`);
+            const latestScanEl = document.getElementById(`latest-scan-${qrId}`);
             
-            // Prepare data for timeline chart
+            if (topPlatformEl) topPlatformEl.textContent = topPlatform;
+            if (topRegionEl) topRegionEl.textContent = topRegion.split(',')[0]; // Just city/first part
+            if (latestScanEl && latestScan) {
+                const scanDate = new Date(latestScan);
+                latestScanEl.textContent = scanDate.toLocaleDateString();
+            }
+            
+            // Create timeline chart
             const dates = Object.keys(scanDates).sort();
             const scanCounts = dates.map(date => scanDates[date]);
             
-            // Create chart (only if we have data)
             if (dates.length > 0) {
                 const ctx = document.getElementById(`chart-${qrId}`);
-                if (ctx) { // Make sure the canvas exists
-                    const myChart = new Chart(ctx, {
+                if (ctx) {
+                    new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: dates,
+                            labels: dates.map(date => {
+                                const d = new Date(date);
+                                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            }),
                             datasets: [{
                                 label: 'Scans',
                                 data: scanCounts,
@@ -328,7 +299,8 @@
                                 tension: 0.4,
                                 pointBackgroundColor: 'rgba(67, 97, 238, 1)',
                                 pointRadius: 4,
-                                pointHoverRadius: 6
+                                pointHoverRadius: 6,
+                                fill: true
                             }]
                         },
                         options: {
@@ -349,14 +321,11 @@
                             }
                         }
                     });
-                } else {
-                    console.error(`Canvas element chart-${qrId} not found`);
                 }
             } else {
-                // If no data, display a message in the chart container
                 const container = document.querySelector(`#chart-${qrId}`).parentNode;
                 if (container) {
-                    container.innerHTML = '<div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-light);">No scan data available</div>';
+                    container.innerHTML = '<div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-light); font-style: italic;">No scan data available</div>';
                 }
             }
         })();
@@ -364,33 +333,30 @@
         
         // Calculate overall statistics
         (function() {
-            // Count total scans
             let totalScans = 0;
             let mostScans = 0;
             let popularQRName = '-';
             
-            // Process each QR code's records
-            {% for code, qr_code_url, records in qr_codes %}
+            {% for code_data in qr_codes %}
+            {% set code = code_data[0] %}
+            {% set records = code_data[2] %}
                 const recordCount = {{ records|length }};
                 totalScans += recordCount;
                 
-                // Keep track of most popular QR code
                 if (recordCount > mostScans) {
                     mostScans = recordCount;
                     popularQRName = "{{ code[1] }}";
                 }
             {% endfor %}
             
-            // Update statistics in the DOM
-            document.querySelector('[data-total-scans]').textContent = totalScans;
+            // Update statistics
+            document.getElementById('total-scans').textContent = totalScans;
             
-            // Calculate average scans
             const qrCodesCount = {{ qr_codes|length }};
             const avgScans = qrCodesCount > 0 ? (totalScans / qrCodesCount).toFixed(1) : '0';
-            document.querySelector('[data-avg-scans]').textContent = avgScans;
+            document.getElementById('avg-scans').textContent = avgScans;
             
-            // Set most popular QR
-            document.querySelector('[data-popular-qr]').textContent = popularQRName;
+            document.getElementById('popular-qr').textContent = popularQRName;
         })();
     </script>
 </body>
