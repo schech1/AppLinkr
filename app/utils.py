@@ -1,8 +1,7 @@
 import validators
 from db import get_db
-from metrics import detect_device, get_client_ip, get_location, detect_browser_and_os
+from metrics import detect_device, get_client_ip, get_location, detect_browser_and_os, get_access_time
 from flask import request
-
 
 def is_valid_url(url):
     """Validate if the given content is a valid URL."""
@@ -16,10 +15,11 @@ def process_metrics(qr_code_id, user_agent):
     referrer = request.headers.get('Referer', 'Direct Access')
     region = get_location(ip_address)
     browser, os = detect_browser_and_os(user_agent)
-
+    access_time = get_access_time(ip_address)
+    
     db = get_db()
-    db.execute('''INSERT INTO qr_code_tracking (qr_code_id, device_type, ip_address, region, browser, os, language, referrer)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-               (qr_code_id, device, ip_address, region, browser, os, language, referrer))
+    db.execute('''INSERT INTO qr_code_tracking (qr_code_id, device_type, ip_address, access_time, region, browser, os, language, referrer)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                  (qr_code_id, device, ip_address, access_time, region, browser, os, language, referrer))
     db.commit()
     return device

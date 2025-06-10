@@ -1,3 +1,5 @@
+from datetime import datetime
+import pytz
 from flask import Flask, request
 import requests
 from user_agents import parse
@@ -44,3 +46,31 @@ def detect_device(user_agent):
         return "ios"
     else:
         return "unknown"
+    
+def get_access_time(ip_address=None):
+    """Get current timestamp in user's local timezone for access_time field."""
+    try:
+        # Get current UTC time
+        utc_now = datetime.now(pytz.UTC)
+        
+        # Try to get timezone from IP location if provided
+        if ip_address:
+            try:
+                response = requests.get(f'http://ipinfo.io/{ip_address}/json')
+                data = response.json()
+                if 'timezone' in data:
+                    # Get local time in user's timezone
+                    user_tz = pytz.timezone(data['timezone'])
+                    local_time = utc_now.astimezone(user_tz)
+                    # Return in SQLite DATETIME format
+                    return local_time.strftime("%Y-%m-%d %H:%M:%S")
+            except Exception as e:
+                print(f"Error fetching timezone for IP {ip_address}: {e}")
+        
+        # Fallback to UTC time in SQLite DATETIME format
+        return utc_now.strftime("%Y-%m-%d %H:%M:%S")
+        
+    except Exception as e:
+        print(f"Error getting access time: {e}")
+        # Return current UTC time as fallback
+        return datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
