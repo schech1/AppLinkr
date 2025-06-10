@@ -236,3 +236,128 @@ def setup_routes(app, SERVER_URL, PASSWORD):
     @app.route('/modern')
     def modern_interface():
         return render_template('modern.html')
+    
+    # Add these routes to your setup_routes function in Flask
+
+    @app.route('/api/stats')
+    @require_authentication
+    def api_stats():
+        """Return comprehensive statistics as JSON for the admin dashboard."""
+        db = get_db()
+        
+        # Basic counts
+        total_codes = db.execute('SELECT COUNT(*) FROM qr_codes').fetchone()[0]
+        total_scans = db.execute('SELECT COUNT(*) FROM qr_code_tracking').fetchone()[0]
+        
+        # Device type breakdown
+        ios_scans = db.execute('SELECT COUNT(*) FROM qr_code_tracking WHERE device_type = ?', ('ios',)).fetchone()[0]
+        android_scans = db.execute('SELECT COUNT(*) FROM qr_code_tracking WHERE device_type = ?', ('android',)).fetchone()[0]
+        other_scans = db.execute('SELECT COUNT(*) FROM qr_code_tracking WHERE device_type NOT IN (?, ?)', ('ios', 'android')).fetchone()[0]
+        
+        # Recent activity (last 7 days)
+        recent_scans = db.execute('''
+            SELECT COUNT(*) FROM qr_code_tracking 
+            WHERE access_time >= datetime('now', '-7 days')
+        ''').fetchone()[0]
+        
+        # Top QR codes by scans
+        top_qr_codes = db.execute('''
+            SELECT qc.title, qc.id, COUNT(qct.id) as scan_count
+            FROM qr_codes qc
+            LEFT JOIN qr_code_tracking qct ON qc.id = qct.qr_code_id
+            GROUP BY qc.id, qc.title
+            ORDER BY scan_count DESC
+            LIMIT 5
+        ''').fetchall()
+        
+        # Daily activity for the last 30 days
+        daily_activity = db.execute('''
+            SELECT DATE(access_time) as date, COUNT(*) as scans
+            FROM qr_code_tracking
+            WHERE access_time >= datetime('now', '-30 days')
+            GROUP BY DATE(access_time)
+            ORDER BY date DESC
+        ''').fetchall()
+        
+        # Browser breakdown
+        browser_stats = db.execute('''
+            SELECT browser, COUNT(*) as count
+            FROM qr_code_tracking
+            WHERE browser IS NOT NULL AND browser != ''
+            GROUP BY browser
+            ORDER BY count DESC
+            LIMIT 10
+        ''').fetchall()
+        
+        # OS breakdown
+        os_stats = db.execute('''
+            SELECT os, COUNT(*) as count
+            FROM qr_code_tracking
+            WHERE os IS NOT NULL AND os != ''
+            GROUP BY os
+            ORDER BY count DESC
+            LIMIT 10
+        ''').fetchall()
+        
+        # Geographic breakdown (if you have region data)
+        region_stats = db.execute('''
+            SELECT region, COUNT(*) as count
+            FROM qr_code_tracking
+            WHERE region IS NOT NULL AND region != ''
+            GROUP BY region
+            ORDER BY count DESC
+            LIMIT 10
+        ''').fetchall()
+        
+        return jsonify({
+            'overview': {
+                'totalCodes': total_codes,
+                'totalScans': total_scans,
+                'recentScans': recent_scans,
+                'iosScans': ios_scans,
+                'androidScans': android_scans,
+                'otherScans': other_scans
+            },
+            'topQrCodes': [{'title': row[0], 'id': row[1], 'scans': row[2]} for row in top_qr_codes],
+            'dailyActivity': [{'date': row[0], 'scans': row[1]} for row in daily_activity],
+            'browserStats': [{'browser': row[0], 'count': row[1]} for row in browser_stats],
+            'osStats': [{'os': row[0], 'count': row[1]} for row in os_stats],
+            'regionStats': [{'region': row[0], 'count': row[1]} for row in region_stats]
+        })
+
+    @app.route('/api/qr-codes')
+    @require_authentication  
+    def api_qr_codes():
+        """Return detailed QR code data for the admin dashboard."""
+        db = get_db()
+        
+        qr_codes = db.execute('''
+            SELECT qc.id, qc.title, qc.content, qc.app_store_url, qc.play_store_url,
+                COUNT(qct.id) as total_scans,
+                MAX(qct.access_time) as last_scan,
+                SUM(CASE WHEN qct.device_type = 'ios' THEN 1 ELSE 0 END) as ios_scans,
+                SUM(CASE WHEN qct.device_type = 'android' THEN 1 ELSE 0 END) as android_scans
+            FROM qr_codes qc
+            LEFT JOIN qr_code_tracking qct ON qc.id = qct.qr_code_id
+            GROUP BY qc.id, qc.title, qc.content, qc.app_store_url, qc.play_store_url
+            ORDER BY total_scans DESC
+        ''').fetchall()
+        
+        return jsonify([{
+            'id': row[0],
+            'title': row[1],
+            'content': row[2],
+            'appStoreUrl': row[3],
+            'playStoreUrl': row[4], 
+            'totalScans': row[5] or 0,
+            'lastScan': row[6],
+            'iosScans': row[7] or 0,
+            'androidScans': row[8] or 0,
+            'qrImageUrl': f"{SERVER_URL}/show/{row[0]}"
+        } for row in qr_codes])
+
+    @app.route('/admin/dashboard')
+    @require_authentication
+    def admin_dashboard():
+        """Serve the modern admin dashboard."""
+        return render_template('admin_dashboard.html')

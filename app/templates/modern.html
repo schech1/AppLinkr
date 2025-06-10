@@ -694,44 +694,81 @@
                 formData.append('app_store_url', iosUrl);
                 formData.append('play_store_url', androidUrl);
                 
-                // Call your Flask /create endpoint
+                // Call your Flask /create endpoint with JSON headers for modern response
                 const response = await fetch('/create', {
                     method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
                     body: formData
                 });
                 
                 if (response.ok) {
-                    const responseText = await response.text();
+                    const contentType = response.headers.get('content-type');
                     
-                    // Parse the response to extract QR code info
-                    // Since Flask returns HTML, we need to extract the QR code URL
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(responseText, 'text/html');
-                    const qrCodeUrlInput = doc.querySelector('input[name="qr_code_url"]');
-                    
-                    if (qrCodeUrlInput) {
-                        const qrCodeUrl = qrCodeUrlInput.value;
+                    if (contentType && contentType.includes('application/json')) {
+                        // Handle JSON response (modern way)
+                        const data = await response.json();
                         
-                        currentQRData = {
-                            url: qrCodeUrl,
-                            appName: appName
-                        };
-                        
-                        // Display the QR code image directly from your backend
-                        qrPreview.innerHTML = `<img src="${qrCodeUrl}" alt="QR Code" style="max-width: 256px; border-radius: 12px; box-shadow: var(--shadow-md);">`;
-                        qrPreview.classList.add('has-qr');
-                        qrActions.style.display = 'flex';
-                        
-                        // Set up download link to get the image from your backend
-                        document.getElementById('downloadBtn').href = qrCodeUrl;
-                        document.getElementById('downloadBtn').download = `${appName}-qr-code.png`;
-                        
-                        showMessage('QR code generated successfully!', 'success');
+                        if (data.success) {
+                            currentQRData = {
+                                url: data.redirect_url,
+                                imageUrl: data.qr_code_url,
+                                appName: appName
+                            };
+                            
+                            // Display the QR code image directly from your backend
+                            qrPreview.innerHTML = `<img src="${data.qr_code_url}" alt="QR Code" style="max-width: 256px; border-radius: 12px; box-shadow: var(--shadow-md);">`;
+                            qrPreview.classList.add('has-qr');
+                            qrActions.style.display = 'flex';
+                            
+                            // Set up download link
+                            document.getElementById('downloadBtn').href = data.qr_code_url;
+                            document.getElementById('downloadBtn').download = `${appName}-qr-code.png`;
+                            
+                            showMessage('QR code generated successfully!', 'success');
+                        } else {
+                            throw new Error(data.message || 'QR code generation failed');
+                        }
                     } else {
-                        throw new Error('QR code generation failed');
+                        // Handle HTML response (fallback for compatibility)
+                        const responseText = await response.text();
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(responseText, 'text/html');
+                        
+                        // Look for flash messages indicating errors
+                        const flashMessages = doc.querySelectorAll('.alert, .flash-message');
+                        if (flashMessages.length > 0) {
+                            const errorMessage = flashMessages[0].textContent.trim();
+                            throw new Error(errorMessage);
+                        }
+                        
+                        // Try to find QR code URL in the response
+                        const qrCodeImg = doc.querySelector('img[src*="/show/"]');
+                        if (qrCodeImg) {
+                            const qrCodeUrl = qrCodeImg.src;
+                            
+                            currentQRData = {
+                                url: qrCodeUrl,
+                                imageUrl: qrCodeUrl,
+                                appName: appName
+                            };
+                            
+                            qrPreview.innerHTML = `<img src="${qrCodeUrl}" alt="QR Code" style="max-width: 256px; border-radius: 12px; box-shadow: var(--shadow-md);">`;
+                            qrPreview.classList.add('has-qr');
+                            qrActions.style.display = 'flex';
+                            
+                            document.getElementById('downloadBtn').href = qrCodeUrl;
+                            document.getElementById('downloadBtn').download = `${appName}-qr-code.png`;
+                            
+                            showMessage('QR code generated successfully!', 'success');
+                        } else {
+                            throw new Error('QR code generation failed');
+                        }
                     }
                 } else {
-                    throw new Error('Failed to generate QR code');
+                    throw new Error(`HTTP ${response.status}: Failed to generate QR code`);
                 }
             } catch (error) {
                 showMessage('Error: ' + error.message, 'error');
