@@ -19,7 +19,6 @@
             --success: #10b981;
             --warning: #f59e0b;
             --error: #ef4444;
-            --dark: #0f172a;
             --gray-50: #f8fafc;
             --gray-100: #f1f5f9;
             --gray-200: #e2e8f0;
@@ -46,7 +45,6 @@
             min-height: 100vh;
         }
 
-        /* Header */
         .header {
             background: var(--white);
             border-bottom: 1px solid var(--gray-200);
@@ -134,7 +132,6 @@
             background: #dc2626;
         }
 
-        /* Main Layout */
         .main-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -153,7 +150,6 @@
             margin-bottom: 2rem;
         }
 
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -215,12 +211,9 @@
         .stat-change {
             font-size: 0.875rem;
             font-weight: 500;
+            color: var(--gray-600);
         }
 
-        .stat-change.positive { color: var(--success); }
-        .stat-change.negative { color: var(--error); }
-
-        /* Dashboard Grid */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -238,7 +231,7 @@
 
         .card-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
             padding-bottom: 1rem;
@@ -254,9 +247,15 @@
         .chart-container {
             height: 300px;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gray-50);
+            border-radius: 8px;
+            color: var(--gray-500);
+            font-style: italic;
         }
 
-        /* QR Codes Table */
         .qr-codes-section {
             background: var(--white);
             border-radius: 12px;
@@ -334,7 +333,6 @@
             color: var(--gray-600);
         }
 
-        /* List styles */
         .top-list {
             list-style: none;
         }
@@ -371,7 +369,6 @@
             color: var(--primary);
         }
 
-        /* Loading states */
         .loading {
             display: flex;
             align-items: center;
@@ -395,7 +392,6 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Responsive */
         @media (max-width: 1024px) {
             .dashboard-grid {
                 grid-template-columns: 1fr;
@@ -416,16 +412,24 @@
             }
         }
 
-        /* Chart placeholder */
-        .chart-placeholder {
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--gray-50);
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
             border-radius: 8px;
-            color: var(--gray-500);
-            font-style: italic;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .message.success {
+            background: var(--success);
+        }
+
+        .message.error {
+            background: var(--error);
         }
     </style>
 </head>
@@ -437,7 +441,7 @@
                 AppLinkr Admin
             </a>
             <div class="header-actions">
-                <a href="/modern" class="btn btn-secondary">
+                <a href="/" class="btn btn-secondary">
                     🏠 QR Generator
                 </a>
                 <a href="/download_db" class="btn btn-primary">
@@ -456,14 +460,13 @@
             <p class="page-subtitle">Monitor your QR code performance and analytics</p>
         </div>
 
-        <!-- Overview Stats -->
-        <div class="stats-grid" id="statsGrid">
+        <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-header">
                     <div class="stat-title">Total QR Codes</div>
                     <div class="stat-icon primary">📱</div>
                 </div>
-                <div class="stat-value" id="totalCodes">-</div>
+                <div class="stat-value" id="totalCodes">Loading...</div>
                 <div class="stat-change">All time</div>
             </div>
             
@@ -472,7 +475,7 @@
                     <div class="stat-title">Total Scans</div>
                     <div class="stat-icon success">📊</div>
                 </div>
-                <div class="stat-value" id="totalScans">-</div>
+                <div class="stat-value" id="totalScans">Loading...</div>
                 <div class="stat-change">All time</div>
             </div>
             
@@ -481,7 +484,7 @@
                     <div class="stat-title">Recent Activity</div>
                     <div class="stat-icon warning">⚡</div>
                 </div>
-                <div class="stat-value" id="recentScans">-</div>
+                <div class="stat-value" id="recentScans">Loading...</div>
                 <div class="stat-change">Last 7 days</div>
             </div>
             
@@ -490,21 +493,18 @@
                     <div class="stat-title">Device Split</div>
                     <div class="stat-icon accent">📱</div>
                 </div>
-                <div class="stat-value" id="deviceSplit">-</div>
+                <div class="stat-value" id="deviceSplit">Loading...</div>
                 <div class="stat-change" id="deviceBreakdown">Loading...</div>
             </div>
         </div>
 
-        <!-- Charts and Lists -->
         <div class="dashboard-grid">
             <div class="dashboard-card">
                 <div class="card-header">
                     <h3 class="card-title">Daily Activity (Last 30 Days)</h3>
                 </div>
-                <div class="chart-container">
-                    <div class="chart-placeholder" id="activityChart">
-                        📈 Activity chart will appear here
-                    </div>
+                <div class="chart-container" id="activityChart">
+                    📈 Activity chart data will appear here
                 </div>
             </div>
 
@@ -521,7 +521,6 @@
             </div>
         </div>
 
-        <!-- Additional Stats -->
         <div class="dashboard-grid">
             <div class="dashboard-card">
                 <div class="card-header">
@@ -548,7 +547,6 @@
             </div>
         </div>
 
-        <!-- QR Codes Table -->
         <div class="qr-codes-section">
             <div class="card-header">
                 <h3 class="card-title">All QR Codes</h3>
@@ -579,328 +577,301 @@
     </main>
 
     <script>
-        let statsData = null;
-        let qrCodesData = null;
+    console.log('=== Admin Dashboard Loading ===');
+    
+    // Global variables
+    var statsData = null;
+    var qrCodesData = null;
+    
+    // Load dashboard data
+    function loadDashboard() {
+        console.log('Loading dashboard data...');
+        
+        // Load stats
+        fetch('/api/stats')
+            .then(function(response) {
+                console.log('Stats response:', response.status);
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('Stats data received:', data);
+                statsData = data;
+                updateOverviewStats();
+                updateTopQrCodes();
+                updateBrowserStats();
+                updateOsStats();
+                updateActivityChart();
+            })
+            .catch(function(error) {
+                console.error('Stats loading failed:', error);
+                showError('Failed to load statistics');
+            });
 
-        // Load all dashboard data
-        async function loadDashboard() {
-            try {
-                // Load stats
-                const statsResponse = await fetch('/api/stats');
-                if (statsResponse.ok) {
-                    statsData = await statsResponse.json();
-                    updateOverviewStats();
-                    updateTopQrCodes();
-                    updateBrowserStats();
-                    updateOsStats();
-                    updateActivityChart();
-                }
+        // Load QR codes
+        fetch('/api/qr-codes')
+            .then(function(response) {
+                console.log('QR codes response:', response.status);
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('QR codes data received:', data.length, 'codes');
+                qrCodesData = data;
+                updateQrCodesTable();
+            })
+            .catch(function(error) {
+                console.error('QR codes loading failed:', error);
+                showError('Failed to load QR codes');
+            });
+    }
 
-                // Load QR codes
-                const qrResponse = await fetch('/api/qr-codes');
-                if (qrResponse.ok) {
-                    qrCodesData = await qrResponse.json();
-                    updateQrCodesTable();
-                }
-            } catch (error) {
-                console.error('Failed to load dashboard data:', error);
-                showError('Failed to load dashboard data');
-            }
+    // Update overview stats
+    function updateOverviewStats() {
+        if (!statsData) return;
+        
+        var overview = statsData.overview;
+        
+        document.getElementById('totalCodes').textContent = overview.totalCodes || '0';
+        document.getElementById('totalScans').textContent = overview.totalScans || '0';
+        document.getElementById('recentScans').textContent = overview.recentScans || '0';
+        
+        var totalDeviceScans = overview.iosScans + overview.androidScans + overview.otherScans;
+        if (totalDeviceScans > 0) {
+            var iosPercent = Math.round((overview.iosScans / totalDeviceScans) * 100);
+            document.getElementById('deviceSplit').textContent = iosPercent + '%';
+            document.getElementById('deviceBreakdown').textContent = 
+                overview.iosScans + ' iOS, ' + overview.androidScans + ' Android';
+        } else {
+            document.getElementById('deviceSplit').textContent = 'N/A';
+            document.getElementById('deviceBreakdown').textContent = 'No scans yet';
+        }
+    }
+
+    // Update top QR codes
+    function updateTopQrCodes() {
+        if (!statsData) return;
+        
+        var container = document.getElementById('topQrCodes');
+        var topQrCodes = statsData.topQrCodes;
+
+        if (topQrCodes.length === 0) {
+            container.innerHTML = '<li class="top-list-item">No QR codes found</li>';
+            return;
         }
 
-        function updateOverviewStats() {
-            if (!statsData) return;
+        var html = '';
+        for (var i = 0; i < topQrCodes.length; i++) {
+            var qr = topQrCodes[i];
+            html += '<li class="top-list-item">' +
+                '<div class="list-item-info">' +
+                '<div class="list-item-name">' + escapeHtml(qr.title) + '</div>' +
+                '<div class="list-item-meta">ID: ' + qr.id.substring(0, 8) + '...</div>' +
+                '</div>' +
+                '<div class="list-item-value">' + qr.scans + ' scans</div>' +
+                '</li>';
+        }
+        container.innerHTML = html;
+    }
 
-            const { overview } = statsData;
-            
-            document.getElementById('totalCodes').textContent = overview.totalCodes || '0';
-            document.getElementById('totalScans').textContent = overview.totalScans || '0';
-            document.getElementById('recentScans').textContent = overview.recentScans || '0';
-            
-            // Device split
-            const totalDeviceScans = overview.iosScans + overview.androidScans + overview.otherScans;
-            if (totalDeviceScans > 0) {
-                const iosPercent = Math.round((overview.iosScans / totalDeviceScans) * 100);
-                document.getElementById('deviceSplit').textContent = `${iosPercent}%`;
-                document.getElementById('deviceBreakdown').textContent = 
-                    `${overview.iosScans} iOS, ${overview.androidScans} Android`;
+    // Update browser stats
+    function updateBrowserStats() {
+        if (!statsData) return;
+        
+        var container = document.getElementById('browserStats');
+        var browserStats = statsData.browserStats;
+
+        if (browserStats.length === 0) {
+            container.innerHTML = '<li class="top-list-item">No browser data available</li>';
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < browserStats.length; i++) {
+            var browser = browserStats[i];
+            html += '<li class="top-list-item">' +
+                '<div class="list-item-info">' +
+                '<div class="list-item-name">' + escapeHtml(browser.browser || 'Unknown') + '</div>' +
+                '</div>' +
+                '<div class="list-item-value">' + browser.count + '</div>' +
+                '</li>';
+        }
+        container.innerHTML = html;
+    }
+
+    // Update OS stats
+    function updateOsStats() {
+        if (!statsData) return;
+        
+        var container = document.getElementById('osStats');
+        var osStats = statsData.osStats;
+
+        if (osStats.length === 0) {
+            container.innerHTML = '<li class="top-list-item">No OS data available</li>';
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < osStats.length; i++) {
+            var os = osStats[i];
+            html += '<li class="top-list-item">' +
+                '<div class="list-item-info">' +
+                '<div class="list-item-name">' + escapeHtml(os.os || 'Unknown') + '</div>' +
+                '</div>' +
+                '<div class="list-item-value">' + os.count + '</div>' +
+                '</li>';
+        }
+        container.innerHTML = html;
+    }
+
+    // Update activity chart
+    function updateActivityChart() {
+        if (!statsData) return;
+        
+        var container = document.getElementById('activityChart');
+        var dailyActivity = statsData.dailyActivity;
+
+        if (dailyActivity.length === 0) {
+            container.innerHTML = '📈 No activity data available';
+            return;
+        }
+
+        var maxScans = 0;
+        for (var i = 0; i < dailyActivity.length; i++) {
+            if (dailyActivity[i].scans > maxScans) {
+                maxScans = dailyActivity[i].scans;
+            }
+        }
+        
+        container.innerHTML = '<div style="padding: 1rem;">' +
+            '<div style="margin-bottom: 1rem; font-weight: 600;">Recent Activity Overview</div>' +
+            '<div style="font-size: 0.875rem; color: var(--gray-600);">' +
+            'Peak day: ' + maxScans + ' scans<br>' +
+            'Total days with activity: ' + dailyActivity.length + '<br>' +
+            '<em>Will be replaced by chart...</em>' +
+            '</div></div>';
+    }
+
+    // Update QR codes table
+    function updateQrCodesTable() {
+        if (!qrCodesData) return;
+        
+        var tbody = document.getElementById('qrCodesTable');
+
+        if (qrCodesData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--gray-500);">No QR codes found</td></tr>';
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < qrCodesData.length; i++) {
+            var qr = qrCodesData[i];
+            html += '<tr>' +
+                '<td><img src="' + qr.qrImageUrl + '" alt="QR Code" class="qr-preview"></td>' +
+                '<td>' +
+                '<div class="qr-title">' + escapeHtml(qr.title) + '</div>' +
+                '<div class="qr-urls">' +
+                (qr.content ? 
+                    'Content: ' + truncateUrl(qr.content) : 
+                    'iOS: ' + truncateUrl(qr.appStoreUrl) + '<br>Android: ' + truncateUrl(qr.playStoreUrl)
+                ) +
+                '</div>' +
+                '</td>' +
+                '<td><div class="scan-count">' + qr.totalScans + '</div></td>' +
+                '<td>' +
+                '<div class="device-breakdown">' +
+                '<span class="device-stat">📱 ' + qr.iosScans + '</span>' +
+                '<span class="device-stat">🤖 ' + qr.androidScans + '</span>' +
+                '</div>' +
+                '</td>' +
+                '<td><div class="last-scan">' + (qr.lastScan ? formatDate(qr.lastScan) : 'Never') + '</div></td>' +
+                '<td>' +
+                '<div style="display: flex; gap: 0.5rem;">' +
+                '<a href="' + qr.qrImageUrl + '" download="' + qr.title + '-qr.png" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">💾</a>' +
+                '<button onclick="deleteQrCode(\'' + qr.id + '\', \'' + escapeHtml(qr.title) + '\')" class="btn btn-danger" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">🗑️</button>' +
+                '</div>' +
+                '</td>' +
+                '</tr>';
+        }
+        tbody.innerHTML = html;
+    }
+
+    // Utility functions
+    function escapeHtml(text) {
+        if (!text) return '';
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function truncateUrl(url, maxLength) {
+        if (!url) return '';
+        maxLength = maxLength || 40;
+        return url.length > maxLength ? url.substring(0, maxLength) + '...' : url;
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return 'Never';
+        var date = new Date(dateString);
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+
+    // Delete QR code
+    function deleteQrCode(id, title) {
+        if (!confirm('Are you sure you want to delete "' + title + '"?')) {
+            return;
+        }
+
+        fetch('/delete/' + id, {
+            method: 'GET'
+        })
+        .then(function(response) {
+            if (response.ok) {
+                showSuccess('QR code "' + title + '" deleted successfully');
+                loadDashboard();
             } else {
-                document.getElementById('deviceSplit').textContent = 'N/A';
-                document.getElementById('deviceBreakdown').textContent = 'No scans yet';
+                throw new Error('Delete failed');
             }
-        }
-
-        function updateTopQrCodes() {
-            if (!statsData) return;
-
-            const container = document.getElementById('topQrCodes');
-            const { topQrCodes } = statsData;
-
-            if (topQrCodes.length === 0) {
-                container.innerHTML = '<li class="list-item">No QR codes found</li>';
-                return;
-            }
-
-            container.innerHTML = topQrCodes.map(qr => `
-                <li class="top-list-item">
-                    <div class="list-item-info">
-                        <div class="list-item-name">${escapeHtml(qr.title)}</div>
-                        <div class="list-item-meta">ID: ${qr.id.substring(0, 8)}...</div>
-                    </div>
-                    <div class="list-item-value">${qr.scans} scans</div>
-                </li>
-            `).join('');
-        }
-
-        function updateBrowserStats() {
-            if (!statsData) return;
-
-            const container = document.getElementById('browserStats');
-            const { browserStats } = statsData;
-
-            if (browserStats.length === 0) {
-                container.innerHTML = '<li class="list-item">No browser data available</li>';
-                return;
-            }
-
-            container.innerHTML = browserStats.map(browser => `
-                <li class="top-list-item">
-                    <div class="list-item-info">
-                        <div class="list-item-name">${escapeHtml(browser.browser) || 'Unknown'}</div>
-                    </div>
-                    <div class="list-item-value">${browser.count}</div>
-                </li>
-            `).join('');
-        }
-
-        function updateOsStats() {
-            if (!statsData) return;
-
-            const container = document.getElementById('osStats');
-            const { osStats } = statsData;
-
-            if (osStats.length === 0) {
-                container.innerHTML = '<li class="list-item">No OS data available</li>';
-                return;
-            }
-
-            container.innerHTML = osStats.map(os => `
-                <li class="top-list-item">
-                    <div class="list-item-info">
-                        <div class="list-item-name">${escapeHtml(os.os) || 'Unknown'}</div>
-                    </div>
-                    <div class="list-item-value">${os.count}</div>
-                </li>
-            `).join('');
-        }
-
-        function updateActivityChart() {
-            if (!statsData) return;
-
-            const container = document.getElementById('activityChart');
-            const { dailyActivity } = statsData;
-
-            if (dailyActivity.length === 0) {
-                container.innerHTML = '📈 No activity data available';
-                return;
-            }
-
-            // Simple text-based chart for now
-            // In a real implementation, you'd use Chart.js or similar
-            const maxScans = Math.max(...dailyActivity.map(day => day.scans));
-            
-            container.innerHTML = `
-                <div style="padding: 1rem;">
-                    <div style="margin-bottom: 1rem; font-weight: 600;">
-                        Recent Activity Overview
-                    </div>
-                    <div style="font-size: 0.875rem; color: var(--gray-600);">
-                        Peak day: ${maxScans} scans<br>
-                        Total days with activity: ${dailyActivity.length}<br>
-                        <em>Chart visualization can be added with Chart.js</em>
-                    </div>
-                </div>
-            `;
-        }
-
-        function updateQrCodesTable() {
-            if (!qrCodesData) return;
-
-            const tbody = document.getElementById('qrCodesTable');
-
-            if (qrCodesData.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 2rem; color: var(--gray-500);">
-                            No QR codes found
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-
-            tbody.innerHTML = qrCodesData.map(qr => `
-                <tr>
-                    <td>
-                        <img src="${qr.qrImageUrl}" alt="QR Code" class="qr-preview">
-                    </td>
-                    <td>
-                        <div class="qr-title">${escapeHtml(qr.title)}</div>
-                        <div class="qr-urls">
-                            ${qr.content ? 
-                                `Content: ${truncateUrl(qr.content)}` : 
-                                `iOS: ${truncateUrl(qr.appStoreUrl)}<br>Android: ${truncateUrl(qr.playStoreUrl)}`
-                            }
-                        </div>
-                    </td>
-                    <td>
-                        <div class="scan-count">${qr.totalScans}</div>
-                    </td>
-                    <td>
-                        <div class="device-breakdown">
-                            <span class="device-stat">📱 ${qr.iosScans}</span>
-                            <span class="device-stat">🤖 ${qr.androidScans}</span>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="last-scan">
-                            ${qr.lastScan ? formatDate(qr.lastScan) : 'Never'}
-                        </div>
-                    </td>
-                    <td>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <a href="${qr.qrImageUrl}" download="${qr.title}-qr.png" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
-                                💾
-                            </a>
-                            <button onclick="deleteQrCode('${qr.id}', '${escapeHtml(qr.title)}')" class="btn btn-danger" style="font-size: 0.75rem; padding: 0.25rem 0.5rem;">
-                                🗑️
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // Utility functions
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function truncateUrl(url, maxLength = 40) {
-            if (!url) return '';
-            return url.length > maxLength ? url.substring(0, maxLength) + '...' : url;
-        }
-
-        function formatDate(dateString) {
-            if (!dateString) return 'Never';
-            const date = new Date(dateString);
-            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        }
-
-        // Delete QR code function
-        async function deleteQrCode(id, title) {
-            if (!confirm(`Are you sure you want to delete "${title}"?`)) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`/delete/${id}`, {
-                    method: 'GET' // Your backend uses GET for delete
-                });
-
-                if (response.ok) {
-                    showSuccess(`QR code "${title}" deleted successfully`);
-                    // Reload the dashboard data
-                    await loadDashboard();
-                } else {
-                    throw new Error('Delete failed');
-                }
-            } catch (error) {
-                console.error('Delete error:', error);
-                showError(`Failed to delete QR code "${title}"`);
-            }
-        }
-
-        // Show messages
-        function showSuccess(message) {
-            showMessage(message, 'success');
-        }
-
-        function showError(message) {
-            showMessage(message, 'error');
-        }
-
-        function showMessage(message, type) {
-            // Remove existing messages
-            const existingMessage = document.querySelector('.message');
-            if (existingMessage) {
-                existingMessage.remove();
-            }
-
-            // Create new message
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${type}`;
-            messageDiv.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 1rem 1.5rem;
-                border-radius: 8px;
-                color: white;
-                font-weight: 500;
-                z-index: 1000;
-                box-shadow: var(--shadow-lg);
-                animation: slideIn 0.3s ease-out;
-                ${type === 'success' ? 'background: var(--success);' : 'background: var(--error);'}
-            `;
-            messageDiv.textContent = message;
-
-            document.body.appendChild(messageDiv);
-
-            // Auto remove after 5 seconds
-            setTimeout(() => {
-                messageDiv.style.animation = 'slideOut 0.3s ease-in forwards';
-                setTimeout(() => messageDiv.remove(), 300);
-            }, 5000);
-        }
-
-        // Auto-refresh dashboard every 30 seconds
-        function startAutoRefresh() {
-            setInterval(loadDashboard, 30000); // 30 seconds
-        }
-
-        // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
-            loadDashboard();
-            startAutoRefresh();
+        })
+        .catch(function(error) {
+            console.error('Delete error:', error);
+            showError('Failed to delete QR code "' + title + '"');
         });
+    }
 
-        // Add CSS animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-            
-            @keyframes slideOut {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(100%);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
+    // Show messages
+    function showSuccess(message) {
+        showMessage(message, 'success');
+    }
+
+    function showError(message) {
+        showMessage(message, 'error');
+    }
+
+    function showMessage(message, type) {
+        var existingMessage = document.querySelector('.message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+
+        var messageDiv = document.createElement('div');
+        messageDiv.className = 'message ' + type;
+        messageDiv.textContent = message;
+        document.body.appendChild(messageDiv);
+
+        setTimeout(function() {
+            messageDiv.remove();
+        }, 5000);
+    }
+
+    // Initialize dashboard when DOM is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Dashboard initializing...');
+        loadDashboard();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboard, 30000);
+    });
+
+    console.log('=== Admin Dashboard Script Loaded ===');
+    </script>
+</body>
+</html>
