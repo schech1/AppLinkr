@@ -232,3 +232,7 @@ def setup_routes(app, SERVER_URL, PASSWORD):
         """Logout and clear session."""
         session.pop('authenticated', None)
         return redirect(url_for('admin'))
+
+    @app.route('/modern')
+    def modern_interface():
+        return render_template('modern.html')
