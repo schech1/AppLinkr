@@ -297,6 +297,106 @@
             height: 40px;
             border-radius: 6px;
             border: 1px solid var(--gray-200);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .qr-preview:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-md);
+        }
+
+        .store-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .store-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        .redirect-link {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            background: var(--gray-50);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--gray-200);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .redirect-link:hover {
+            background: var(--gray-100);
+            border-color: var(--primary);
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+
+        .modal-qr {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--gray-100);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--gray-200);
+        }
+
+        .copy-success {
+            color: var(--success);
+            font-weight: 600;
         }
 
         .qr-title {
@@ -441,7 +541,7 @@
                 AppLinkr Admin
             </a>
             <div class="header-actions">
-                <a href="/" class="btn btn-secondary">
+                <a href="/modern" class="btn btn-secondary">
                     🏠 QR Generator
                 </a>
                 <a href="/download_db" class="btn btn-primary">
@@ -557,6 +657,7 @@
                         <tr>
                             <th>Preview</th>
                             <th>Title & URLs</th>
+                            <th>Redirect Link</th>
                             <th>Total Scans</th>
                             <th>Device Breakdown</th>
                             <th>Last Scan</th>
@@ -565,7 +666,7 @@
                     </thead>
                     <tbody id="qrCodesTable">
                         <tr>
-                            <td colspan="6" class="loading">
+                            <td colspan="7" class="loading">
                                 <div class="spinner"></div>
                                 Loading QR codes...
                             </td>
@@ -575,6 +676,18 @@
             </div>
         </div>
     </main>
+
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeQrModal()">&times;</button>
+            <h3 id="modalTitle" style="margin-bottom: 1rem; color: var(--gray-900);"></h3>
+            <img id="modalQrImage" class="modal-qr" src="" alt="QR Code">
+            <div style="margin-top: 1rem;">
+                <button class="btn btn-primary" onclick="downloadModalQr()">💾 Download</button>
+            </div>
+        </div>
+    </div>
 
     <script>
     console.log('=== Admin Dashboard Loading ===');
@@ -746,7 +859,7 @@
             '<div style="font-size: 0.875rem; color: var(--gray-600);">' +
             'Peak day: ' + maxScans + ' scans<br>' +
             'Total days with activity: ' + dailyActivity.length + '<br>' +
-            '<em>Will be replaced by chart...</em>' +
+            '<em>Chart visualization can be added with Chart.js</em>' +
             '</div></div>';
     }
 
@@ -757,22 +870,30 @@
         var tbody = document.getElementById('qrCodesTable');
 
         if (qrCodesData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--gray-500);">No QR codes found</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--gray-500);">No QR codes found</td></tr>';
             return;
         }
 
         var html = '';
         for (var i = 0; i < qrCodesData.length; i++) {
             var qr = qrCodesData[i];
+            var redirectUrl = window.location.origin + '/redirect/' + qr.id;
+            
             html += '<tr>' +
-                '<td><img src="' + qr.qrImageUrl + '" alt="QR Code" class="qr-preview"></td>' +
+                '<td><img src="' + qr.qrImageUrl + '" alt="QR Code" class="qr-preview" onclick="showQrModal(\'' + qr.qrImageUrl + '\', \'' + escapeHtml(qr.title) + '\', \'' + qr.id + '\')"></td>' +
                 '<td>' +
                 '<div class="qr-title">' + escapeHtml(qr.title) + '</div>' +
                 '<div class="qr-urls">' +
                 (qr.content ? 
-                    'Content: ' + truncateUrl(qr.content) : 
-                    'iOS: ' + truncateUrl(qr.appStoreUrl) + '<br>Android: ' + truncateUrl(qr.playStoreUrl)
+                    'Content: <a href="' + qr.content + '" target="_blank" class="store-link">' + truncateUrl(qr.content, 30) + '</a>' : 
+                    'iOS: <a href="' + qr.appStoreUrl + '" target="_blank" class="store-link">' + truncateUrl(qr.appStoreUrl, 25) + '</a><br>' +
+                    'Android: <a href="' + qr.playStoreUrl + '" target="_blank" class="store-link">' + truncateUrl(qr.playStoreUrl, 25) + '</a>'
                 ) +
+                '</div>' +
+                '</td>' +
+                '<td>' +
+                '<div class="redirect-link" onclick="copyRedirectLink(\'' + redirectUrl + '\', this)" title="Click to copy: ' + redirectUrl + '">' +
+                truncateUrl(redirectUrl, 25) +
                 '</div>' +
                 '</td>' +
                 '<td><div class="scan-count">' + qr.totalScans + '</div></td>' +
@@ -814,7 +935,71 @@
         return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     }
 
-    // Delete QR code
+    // Show QR code modal
+    function showQrModal(imageUrl, title, qrId) {
+        var modal = document.getElementById('qrModal');
+        var modalTitle = document.getElementById('modalTitle');
+        var modalImage = document.getElementById('modalQrImage');
+        
+        modalTitle.textContent = title;
+        modalImage.src = imageUrl;
+        modalImage.setAttribute('data-qr-id', qrId);
+        modalImage.setAttribute('data-title', title);
+        
+        modal.style.display = 'block';
+        
+        // Close modal when clicking outside
+        modal.onclick = function(event) {
+            if (event.target === modal) {
+                closeQrModal();
+            }
+        };
+    }
+
+    // Close QR code modal
+    function closeQrModal() {
+        document.getElementById('qrModal').style.display = 'none';
+    }
+
+    // Download QR from modal
+    function downloadModalQr() {
+        var modalImage = document.getElementById('modalQrImage');
+        var qrId = modalImage.getAttribute('data-qr-id');
+        var title = modalImage.getAttribute('data-title');
+        
+        var link = document.createElement('a');
+        link.href = modalImage.src;
+        link.download = title + '-qr-code.png';
+        link.click();
+    }
+
+    // Copy redirect link
+    function copyRedirectLink(url, element) {
+        navigator.clipboard.writeText(url).then(function() {
+            // Visual feedback
+            var originalText = element.textContent;
+            var originalClass = element.className;
+            
+            element.textContent = 'Copied!';
+            element.className = originalClass + ' copy-success';
+            
+            setTimeout(function() {
+                element.textContent = truncateUrl(url, 25);
+                element.className = originalClass;
+            }, 2000);
+            
+            showSuccess('Redirect link copied to clipboard!');
+        }).catch(function() {
+            showError('Failed to copy link');
+        });
+    }
+
+    // Handle escape key to close modal
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeQrModal();
+        }
+    });
     function deleteQrCode(id, title) {
         if (!confirm('Are you sure you want to delete "' + title + '"?')) {
             return;
