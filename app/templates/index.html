@@ -433,40 +433,6 @@
             color: var(--gray-600);
         }
 
-        /* Stats section */
-        .stats-preview {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-top: 3rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 2rem;
-            text-align: center;
-        }
-
-        .stat-item {
-            color: var(--white);
-        }
-
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 800;
-            display: block;
-            background: linear-gradient(45deg, #fff, #e2e8f0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .stat-label {
-            font-size: 0.875rem;
-            opacity: 0.8;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
 
         /* Animations */
         @keyframes fadeInUp {
@@ -549,7 +515,6 @@
             </a>
             <div class="nav-links">
                 <a href="#features" class="nav-link">Features</a>
-                <a href="#stats" class="nav-link">Stats</a>
                 <button class="admin-btn" onclick="goToAdmin()">Admin</button>
             </div>
         </nav>
@@ -629,25 +594,6 @@
                 <div class="feature-icon">⚡</div>
                 <h3>Lightning Fast</h3>
                 <p>Generate QR codes instantly with our optimized backend infrastructure</p>
-            </div>
-        </section>
-
-        <section class="stats-preview" id="stats">
-            <div class="stat-item">
-                <span class="stat-number" id="totalScans">-</span>
-                <span class="stat-label">Total Scans</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" id="totalCodes">-</span>
-                <span class="stat-label">QR Codes</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" id="iosScans">-</span>
-                <span class="stat-label">iOS Users</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-number" id="androidScans">-</span>
-                <span class="stat-label">Android Users</span>
             </div>
         </section>
     </main>
@@ -817,40 +763,10 @@
             window.location.href = '/admin';
         }
 
-        // Load stats from your backend
-        async function loadStats() {
-            try {
-                // Since you don't have a dedicated stats API, we'll need to add one
-                // For now, we'll use placeholder values that match your demo
-                // You can create a /api/stats endpoint that returns JSON
-                
-                // Placeholder stats - replace with actual API call when ready
-                document.getElementById('totalScans').textContent = 'N/A';
-                document.getElementById('totalCodes').textContent = 'N/A';
-                document.getElementById('iosScans').textContent = 'N/A';
-                document.getElementById('androidScans').textContent = 'N/A';
-                
-                // Example of how to call your stats API when you create it:
-                /*
-                const response = await fetch('/api/stats');
-                if (response.ok) {
-                    const stats = await response.json();
-                    document.getElementById('totalScans').textContent = stats.totalScans || '0';
-                    document.getElementById('totalCodes').textContent = stats.totalCodes || '0';
-                    document.getElementById('iosScans').textContent = stats.iosScans || '0';
-                    document.getElementById('androidScans').textContent = stats.androidScans || '0';
-                }
-                */
-            } catch (error) {
-                console.log('Stats loading failed:', error);
-                // Keep placeholder values on error
-            }
-        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
-            loadStats();
         });
 
         // Smooth scrolling for navigation
